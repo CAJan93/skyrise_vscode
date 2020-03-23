@@ -1,0 +1,281 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      // remove all docker images that have a tage called "<none>"
+      "label": "docker remove all UNTAGGED images",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "for img in $(docker image ls | grep \"<none>\" | awk '\"'\"'{ print $3 }'\"'\"' ) ; do docker image rm $img ; done"
+      ]
+    },
+    {
+      "label": "check pragma once in all src/",
+      "type":  "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "cd src && for f in $(find . -name \"*.hpp\"); do if [ \"$(head -1 $f)\" != \"#pragma once\" ]; then echo \"$f does not have pragma once!\" ; fi ; done && echo \"check done\""
+      ]
+    },
+    {
+      // remove all docker images
+      "label": "docker remove ALL images",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "for img in $(docker image ls | awk '\"'\"'{ print $3 }'\"'\"' ) ; do docker image rm $img ; done"
+      ]
+    },
+    {
+      // abruptly stop all running containers
+      "label": "Kill all running Docker containers",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "docker kill $(docker ps -q)"
+      ]
+    },
+    {
+      "label": "upload .zip to S3://benchmark-source-bucket",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "aws s3 cp cmake-build-debug/pkg/${input:pickArtifact}.zip s3://benchmark-source-bucket/${input:pickArtifact}.zip"
+      ]
+    },
+    {
+      "label": "upload .zip to S3://operator-source-bucket",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "aws s3 cp cmake-build-debug/pkg/${input:pickArtifact}.zip s3://operator-source-bucket/${input:pickArtifact}.zip"
+      ]
+    },
+    {
+      // start an instance of minio
+      "label": "Start local minio instance",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v",
+        "~/Documents/skyrise-operators/minio/data:/data",
+        "localminio"
+      ],
+      "dependsOn": "Build local minio instance if not present"
+    },
+    {
+      // build minio from a Dockerfile, if not present
+      "label": "Build local minio instance if not present",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "\"if [ -z \\\"$(docker image ls | grep localminio)\\\" ] ; then echo \\\"building missing image localminio\\\" && echo -e \\\"Starting minio client\\nThe exposed port can be found in the Dockerfile of the localminio image instance (default 9000)\\nExposed Buckets are listed in skyrise-operators/minio/data\\n\\\" && cd ~/Documents/skyrise-operators/minio && docker build -t localminio .; else echo \\\"image localminio already present\\\" ; fi\""
+      ]
+    },
+    {
+      // build/update minio from a Dockerfile
+      "label": "Build local minio",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "cd ~/Documents/skyrise-operators/minio && docker build -t localminio ."
+      ]
+    },
+    {
+      "label": "remove result files",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "\"for file in $(ls minio/data/results/ | grep -v \\\"readme.txt\\\" ); do rm -f \\\"minio/data/results/$(file)\\\" ; done\""
+      ]
+    },
+    {
+      "label": "cmake",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v",
+        "${workspaceFolder}:/tmp",
+        "cpp_build_env",
+        "/bin/bash",
+        "-c",
+        "\"cd /tmp/cmake-build-debug && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_BUILD_TYPE=Debug\""
+      ],
+      "dependsOn": "create build container if not present"
+    },
+    {
+      "label": "make target",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v",
+        "${workspaceFolder}:/tmp",
+        "cpp_build_env",
+        "/bin/bash",
+        "-c",
+        "\"cd /tmp/cmake-build-debug && time make ${input:pickTarget}\""
+      ]
+    },
+    {
+      // run an artifact that is specified by the user inside the debug container
+      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if cpp_debug_env starts first
+      "label": "run debug container networkBench",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "-e",
+        "AWS_LAMBDA_EVENT_BODY='{\"testDurationSec\": 60, \"s3Bucket\": \"develop\", \"s3Key\": \"KiB1\",\"requestType\": \"GET\",\"isDryRun\": false,\"lambdaSize\": 3008,\"storageName\": \"S3\",\"readMitigation\": -1,\"endpoint\": \"192.168.97.3:9000\",\"writeMitigation\": -1,\"nrConcurrentRequests\": 2,\"doubleWrite\": false,\"csvHasHeader\": true}'",
+        "-e",
+        "AWS_ACCESS_KEY_ID=\"minio\"",
+        "-e",
+        "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
+        "-e",
+        "DEBUG=${input:bool}",
+        "-e",
+        "ARTIFACT=skyriseNetworkBenchmark",
+        "--privileged",
+        "--cap-add=SYS_PTRACE",
+        "--security-opt",
+        "seccomp=unconfined",
+        "--rm",
+        "-v",
+        "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
+        "-v",
+        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // or use usr/local/lib64?
+        "cpp_debug_env",
+        "/var/runtime/init"
+      ],
+      "dependsOn": "create debug container if not present"
+    },
+    {
+      // run an artifact that is specified by the user inside the debug container
+      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if cpp_debug_env starts first
+      "label": "run debug container scan",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "-e",
+        "AWS_LAMBDA_EVENT_BODY='{ \"s3Bucket\": \"develop\", \"s3Key\": \"lineitem_1.csv\", \"endpoint\": \"192.168.97.3:9000\"}'",
+        "-e",
+        "AWS_ACCESS_KEY_ID=\"minio\"",
+        "-e",
+        "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
+        "-e",
+        "ARTIFACT=scanOperator",
+        "-e",
+        "DEBUG=${input:bool}",
+        "--privileged",
+        "--cap-add=SYS_PTRACE",
+        "--security-opt",
+        "seccomp=unconfined",
+        "--rm",
+        "-v",
+        "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
+        "-v",
+        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // alternative: use usr/local/lib64
+        "cpp_debug_env",
+        "/var/runtime/init"
+      ],
+      "dependsOn": "create debug container if not present"
+    },
+    {
+      // check if cpp_build_env exists, if not build it
+      "label": "create build container if not present",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "\"if [ -z \\\"$(docker image ls | grep cpp_build_env)\\\" ] ; then echo \\\"building missing image cpp_build_env\\\" && cd ${workspaceFolder}/third_party && docker build -t cpp_build_env --target skyrise-build -f ${workspaceFolder}/Dockerfile .; else echo \\\"image cpp_build_env already present\\\" ; fi\""
+      ]
+    },
+    {
+      // build/update cpp_build_env exists
+      "label": "create build container",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "cd ${workspaceFolder}/third_party && docker build -t cpp_build_env --target skyrise-build -f ${workspaceFolder}/Dockerfile ."
+      ]
+    },
+    {
+      // check if cpp_debug_env exists, if not build it. Container cpp_debug_env is used for creating debug builds, not for running them.
+      "label": "create debug container if not present",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "\"if [ -z \\\"$(docker image ls | grep cpp_debug_env)\\\" ] ; then echo \\\"building missing image cpp_debug_env\\\" && cd ${workspaceFolder}/third_party && docker build -t cpp_debug_env -f ${workspaceFolder}/Dockerfile .; else echo \\\"image cpp_debug_env already present\\\" ; fi\""
+      ]
+    },
+    {
+      // Build/update the cpp_debug_env
+      "label": "create debug container",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "\"cd ${workspaceFolder}/third_party && docker build -t cpp_debug_env -f ${workspaceFolder}/Dockerfile .\""
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "type": "pickString",
+      "id": "pickArtifact",
+      "description": "The artifact to execute",
+      "options": [
+        "benchmarkDriver",
+        "orchestrator",
+        "scanOperator",
+        "skyriseNetworkBenchmark",
+        "skyriseS3Benchmark"
+      ]
+    },
+    {
+      "type": "pickString",
+      "id": "pickTarget",
+      "description": "The artifact to execute",
+      "options": [
+        "all",
+        "aws-lambda-package-benchmarkDriver",
+        "aws-lambda-package-orchestrator",
+        "aws-lambda-package-scanOperator",
+        "aws-lambda-package-skyriseNetworkBenchmark",
+        "aws-lambda-package-skyriseS3Benchmark",
+        "benchmarkDriver",
+        "orchestrator",
+        "scanOperator",
+        "skyriseNetworkBenchmark",
+        "skyriseS3Benchmark"
+      ]
+    },
+    {
+      "type": "pickString",
+      "id": "bool",
+      "description": "pick a boolean value",
+      "options": [
+        "true",
+        "false"
+      ]
+    }
+  ]
+}
