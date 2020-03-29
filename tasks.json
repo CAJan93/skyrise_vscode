@@ -41,7 +41,7 @@
       ]
     },
     {
-      "label": "upload .zip to S3://benchmark-source-bucket",
+      "label": "upload .zip to S3://benchmark-source-bucket (debug)",
       "type": "shell",
       "command": "bash",
       "args": [
@@ -50,12 +50,30 @@
       ]
     },
     {
-      "label": "upload .zip to S3://operator-source-bucket",
+      "label": "upload .zip to S3://benchmark-source-bucket (release)",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "aws s3 cp cmake-build-release/pkg/${input:pickArtifact}.zip s3://benchmark-source-bucket/${input:pickArtifact}.zip"
+      ]
+    },
+    {
+      "label": "upload .zip to S3://operator-source-bucket (debug)",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
         "aws s3 cp cmake-build-debug/pkg/${input:pickArtifact}.zip s3://operator-source-bucket/${input:pickArtifact}.zip"
+      ]
+    },
+    {
+      "label": "upload .zip to S3://operator-source-bucket (release)",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "aws s3 cp cmake-build-release/pkg/${input:pickArtifact}.zip s3://operator-source-bucket/${input:pickArtifact}.zip"
       ]
     },
     {
@@ -102,7 +120,7 @@
       ]
     },
     {
-      "label": "cmake",
+      "label": "cmake (debug)",
       "type": "shell",
       "command": "docker",
       "args": [
@@ -118,7 +136,23 @@
       "dependsOn": "create build container if not present"
     },
     {
-      "label": "make target",
+      "label": "cmake (release)",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v",
+        "${workspaceFolder}:/tmp",
+        "cpp_build_env",
+        "/bin/bash",
+        "-c",
+        "\"cd /tmp/cmake-build-release && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_BUILD_TYPE=Release\""
+      ],
+      "dependsOn": "create build container if not present"
+    },
+    {
+      "label": "make target (debug)",
       "type": "shell",
       "command": "docker",
       "args": [
@@ -133,9 +167,24 @@
       ]
     },
     {
+      "label": "make target (release)",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v",
+        "${workspaceFolder}:/tmp",
+        "cpp_build_env",
+        "/bin/bash",
+        "-c",
+        "\"cd /tmp/cmake-build-release && time make ${input:pickTarget}\""
+      ]
+    },
+    {
       // run an artifact that is specified by the user inside the debug container
       // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if cpp_debug_env starts first
-      "label": "run debug container networkBench",
+      "label": "run debug container networkBench (debug)",
       "type": "shell",
       "command": "docker",
       "args": [
@@ -147,9 +196,11 @@
         "-e",
         "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
         "-e",
-        "DEBUG=${input:bool}",
+        "SKYRISE_DEBUG=${input:bool}",
         "-e",
-        "ARTIFACT=skyriseNetworkBenchmark",
+        "SKYRISE_ARTIFACT=skyriseNetworkBenchmark",
+        "-e",
+        "SKYRISE_DEBUGIP=\"192.168.97.2\"",
         "--privileged",
         "--cap-add=SYS_PTRACE",
         "--security-opt",
@@ -160,14 +211,48 @@
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // or use usr/local/lib64?
         "cpp_debug_env",
-        "/var/runtime/init"
+        "/var/runtime/bootstrap_wrapper"
       ],
       "dependsOn": "create debug container if not present"
     },
     {
       // run an artifact that is specified by the user inside the debug container
       // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if cpp_debug_env starts first
-      "label": "run debug container scan",
+      "label": "run debug container networkBench (release)",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "-e",
+        "AWS_LAMBDA_EVENT_BODY='{\"testDurationSec\": 60, \"s3Bucket\": \"develop\", \"s3Key\": \"KiB1\",\"requestType\": \"GET\",\"isDryRun\": false,\"lambdaSize\": 3008,\"storageName\": \"S3\",\"readMitigation\": -1,\"endpoint\": \"192.168.97.3:9000\",\"writeMitigation\": -1,\"nrConcurrentRequests\": 2,\"doubleWrite\": false,\"csvHasHeader\": true}'",
+        "-e",
+        "AWS_ACCESS_KEY_ID=\"minio\"",
+        "-e",
+        "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
+        "-e",
+        "SKYRISE_DEBUG=${input:bool}",
+        "-e",
+        "SKYRISE_ARTIFACT=skyriseNetworkBenchmark",
+        "-e",
+        "SKYRISE_DEBUGIP=\"192.168.97.2\"",
+        "--privileged",
+        "--cap-add=SYS_PTRACE",
+        "--security-opt",
+        "seccomp=unconfined",
+        "--rm",
+        "-v",
+        "${workspaceFolder}/cmake-build-release/bin:/var/task/bin/",
+        "-v",
+        "${workspaceFolder}/cmake-build-release/lib:/tmp/cmake-build-release/lib", // or use usr/local/lib64?
+        "cpp_debug_env",
+        "/var/runtime/bootstrap_wrapper"
+      ],
+      "dependsOn": "create debug container if not present"
+    },
+    {
+      // run an artifact that is specified by the user inside the debug container
+      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if cpp_debug_env starts first
+      "label": "run debug container scan (debug)",
       "type": "shell",
       "command": "docker",
       "args": [
@@ -179,9 +264,11 @@
         "-e",
         "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
         "-e",
-        "ARTIFACT=scanOperator",
+        "SKYRISE_ARTIFACT=scanOperator",
         "-e",
-        "DEBUG=${input:bool}",
+        "SKYRISE_DEBUG=${input:bool}",
+        "-e",
+        "SKYRISE_DEBUGIP=\"192.168.97.2\"",
         "--privileged",
         "--cap-add=SYS_PTRACE",
         "--security-opt",
@@ -192,7 +279,41 @@
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // alternative: use usr/local/lib64
         "cpp_debug_env",
-        "/var/runtime/init"
+        "/var/runtime/bootstrap_wrapper"
+      ],
+      "dependsOn": "create debug container if not present"
+    },
+    {
+      // run an artifact that is specified by the user inside the debug container
+      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if cpp_debug_env starts first
+      "label": "run debug container scan (release)",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "-e",
+        "AWS_LAMBDA_EVENT_BODY='{ \"s3Bucket\": \"develop\", \"s3Key\": \"lineitem_1.csv\", \"endpoint\": \"192.168.97.3:9000\"}'",
+        "-e",
+        "AWS_ACCESS_KEY_ID=\"minio\"",
+        "-e",
+        "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
+        "-e",
+        "SKYRISE_ARTIFACT=scanOperator",
+        "-e",
+        "SKYRISE_DEBUG=${input:bool}",
+        "-e",
+        "SKYRISE_DEBUGIP=\"192.168.97.2\"",
+        "--privileged",
+        "--cap-add=SYS_PTRACE",
+        "--security-opt",
+        "seccomp=unconfined",
+        "--rm",
+        "-v",
+        "${workspaceFolder}/cmake-build-release/bin:/var/task/bin/",
+        "-v",
+        "${workspaceFolder}/cmake-build-release/lib:/tmp/cmake-build-release/lib", // alternative: use usr/local/lib64
+        "cpp_debug_env",
+        "/var/runtime/bootstrap_wrapper"
       ],
       "dependsOn": "create debug container if not present"
     },
