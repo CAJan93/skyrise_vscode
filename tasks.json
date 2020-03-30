@@ -22,7 +22,7 @@
     },
     {
       "label": "check pragma once in all src/",
-      "type":  "shell",
+      "type": "shell",
       "command": "bash",
       "args": [
         "-c",
@@ -262,7 +262,9 @@
         "benchmarkDriver",
         "scanOperator",
         "skyriseNetworkBenchmark",
-        "skyriseS3Benchmark"
+        "skyriseS3Benchmark",
+        "helpers_lib",
+        "GTests"
       ]
     },
     {
