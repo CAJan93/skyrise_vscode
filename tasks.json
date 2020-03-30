@@ -12,12 +12,21 @@
       ]
     },
     {
+      "label": "docker remove all STOPPED containers",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "docker rm $(docker ps -a -q)"
+      ]
+    },
+    {
       "label": "check pragma once in all src/",
       "type":  "shell",
       "command": "bash",
       "args": [
         "-c",
-        "cd src && for f in $(find . -name \"*.hpp\"); do if [ \"$(head -1 $f)\" != \"#pragma once\" ]; then echo \"$f does not have pragma once!\" ; fi ; done && echo \"check done\""
+        "docker rm $(docker ps -a -q)"
       ]
     },
     {
@@ -41,39 +50,12 @@
       ]
     },
     {
-      "label": "upload .zip to S3://benchmark-source-bucket (debug)",
+      "label": "upload .zip to S3://benchmark-source-bucket",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
         "aws s3 cp cmake-build-debug/pkg/${input:pickArtifact}.zip s3://benchmark-source-bucket/${input:pickArtifact}.zip"
-      ]
-    },
-    {
-      "label": "upload .zip to S3://benchmark-source-bucket (release)",
-      "type": "shell",
-      "command": "bash",
-      "args": [
-        "-c",
-        "aws s3 cp cmake-build-release/pkg/${input:pickArtifact}.zip s3://benchmark-source-bucket/${input:pickArtifact}.zip"
-      ]
-    },
-    {
-      "label": "upload .zip to S3://operator-source-bucket (debug)",
-      "type": "shell",
-      "command": "bash",
-      "args": [
-        "-c",
-        "aws s3 cp cmake-build-debug/pkg/${input:pickArtifact}.zip s3://operator-source-bucket/${input:pickArtifact}.zip"
-      ]
-    },
-    {
-      "label": "upload .zip to S3://operator-source-bucket (release)",
-      "type": "shell",
-      "command": "bash",
-      "args": [
-        "-c",
-        "aws s3 cp cmake-build-release/pkg/${input:pickArtifact}.zip s3://operator-source-bucket/${input:pickArtifact}.zip"
       ]
     },
     {
@@ -120,7 +102,7 @@
       ]
     },
     {
-      "label": "cmake (debug)",
+      "label": "cmake",
       "type": "shell",
       "command": "docker",
       "args": [
@@ -136,23 +118,7 @@
       "dependsOn": "create build container if not present"
     },
     {
-      "label": "cmake (release)",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-v",
-        "${workspaceFolder}:/tmp",
-        "skyrise-build",
-        "/bin/bash",
-        "-c",
-        "\"cd /tmp/cmake-build-release && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_BUILD_TYPE=Release\""
-      ],
-      "dependsOn": "create build container if not present"
-    },
-    {
-      "label": "make target (debug)",
+      "label": "make target",
       "type": "shell",
       "command": "docker",
       "args": [
@@ -167,40 +133,23 @@
       ]
     },
     {
-      "label": "make target (release)",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-v",
-        "${workspaceFolder}:/tmp",
-        "skyrise-build",
-        "/bin/bash",
-        "-c",
-        "\"cd /tmp/cmake-build-release && time make ${input:pickTarget}\""
-      ]
-    },
-    {
       // run an artifact that is specified by the user inside the debug container
       // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if skyrise-run starts first
-      "label": "run debug container networkBench (debug)",
+      "label": "run debug container networkBench",
       "type": "shell",
       "command": "docker",
       "args": [
         "run",
         "-e",
-        "AWS_LAMBDA_EVENT_BODY='{\"testDurationSec\": 60, \"s3Bucket\": \"develop\", \"s3Key\": \"KiB1\",\"requestType\": \"GET\",\"isDryRun\": false,\"lambdaSize\": 3008,\"storageName\": \"S3\",\"readMitigation\": -1,\"endpoint\": \"192.168.97.3:9000\",\"writeMitigation\": -1,\"nrConcurrentRequests\": 2,\"doubleWrite\": false,\"csvHasHeader\": true}'",
+        "AWS_LAMBDA_EVENT_BODY='{\"testDurationSec\": 60, \"s3Bucket\": \"develop\", \"s3Key\": \"KiB1\",\"requestType\": \"GET\",\"isDryRun\": false,\"lambdaSize\": 3008,\"storageName\": \"S3\",\"readMitigation\": -1,\"Endpoint\": \"192.168.97.3:9000\",\"writeMitigation\": -1,\"nrConcurrentRequests\": 2,\"doubleWrite\": false,\"csvHasHeader\": true}'",
         "-e",
         "AWS_ACCESS_KEY_ID=\"minio\"",
         "-e",
         "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
         "-e",
-        "SKYRISE_DEBUG=${input:bool}",
+        "DEBUG=${input:bool}",
         "-e",
-        "SKYRISE_ARTIFACT=skyriseNetworkBenchmark",
-        "-e",
-        "SKYRISE_DEBUGIP=\"192.168.97.2\"",
+        "ARTIFACT=skyriseNetworkBenchmark",
         "--privileged",
         "--cap-add=SYS_PTRACE",
         "--security-opt",
@@ -211,64 +160,28 @@
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // or use usr/local/lib64?
         "skyrise-run",
-        "/var/runtime/bootstrap_wrapper"
+        "/var/runtime/init"
       ],
       "dependsOn": "create debug container if not present"
     },
     {
       // run an artifact that is specified by the user inside the debug container
       // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if skyrise-run starts first
-      "label": "run debug container networkBench (release)",
+      "label": "run debug container scan",
       "type": "shell",
       "command": "docker",
       "args": [
         "run",
         "-e",
-        "AWS_LAMBDA_EVENT_BODY='{\"testDurationSec\": 60, \"s3Bucket\": \"develop\", \"s3Key\": \"KiB1\",\"requestType\": \"GET\",\"isDryRun\": false,\"lambdaSize\": 3008,\"storageName\": \"S3\",\"readMitigation\": -1,\"endpoint\": \"192.168.97.3:9000\",\"writeMitigation\": -1,\"nrConcurrentRequests\": 2,\"doubleWrite\": false,\"csvHasHeader\": true}'",
+        "AWS_LAMBDA_EVENT_BODY='{ \"s3Bucket\": \"develop,develop,develop,test\", \"s3Key\": \"doc1,doc2,doc3,doc4\", \"Endpoint\": \"192.168.97.3:9000\"}'",
         "-e",
         "AWS_ACCESS_KEY_ID=\"minio\"",
         "-e",
         "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
         "-e",
-        "SKYRISE_DEBUG=${input:bool}",
+        "ARTIFACT=scanOperator",
         "-e",
-        "SKYRISE_ARTIFACT=skyriseNetworkBenchmark",
-        "-e",
-        "SKYRISE_DEBUGIP=\"192.168.97.2\"",
-        "--privileged",
-        "--cap-add=SYS_PTRACE",
-        "--security-opt",
-        "seccomp=unconfined",
-        "--rm",
-        "-v",
-        "${workspaceFolder}/cmake-build-release/bin:/var/task/bin/",
-        "-v",
-        "${workspaceFolder}/cmake-build-release/lib:/tmp/cmake-build-release/lib", // or use usr/local/lib64?
-        "skyrise-run",
-        "/var/runtime/bootstrap_wrapper"
-      ],
-      "dependsOn": "create debug container if not present"
-    },
-    {
-      // run an artifact that is specified by the user inside the debug container
-      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if skyrise-run starts first
-      "label": "run debug container scan (debug)",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
-        "-e",
-        "AWS_LAMBDA_EVENT_BODY='{ \"s3Bucket\": \"develop\", \"s3Key\": \"lineitem_1.csv\", \"endpoint\": \"192.168.97.3:9000\"}'",
-        "-e",
-        "AWS_ACCESS_KEY_ID=\"minio\"",
-        "-e",
-        "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
-        "-e",
-        "SKYRISE_ARTIFACT=scanOperator",
-        "-e",
-        "SKYRISE_DEBUG=${input:bool}",
-        "-e",
-        "SKYRISE_DEBUGIP=\"192.168.97.2\"",
+        "DEBUG=${input:bool}",
         "--privileged",
         "--cap-add=SYS_PTRACE",
         "--security-opt",
@@ -279,41 +192,7 @@
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // alternative: use usr/local/lib64
         "skyrise-run",
-        "/var/runtime/bootstrap_wrapper"
-      ],
-      "dependsOn": "create debug container if not present"
-    },
-    {
-      // run an artifact that is specified by the user inside the debug container
-      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if skyrise-run starts first
-      "label": "run debug container scan (release)",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
-        "-e",
-        "AWS_LAMBDA_EVENT_BODY='{ \"s3Bucket\": \"develop\", \"s3Key\": \"lineitem_1.csv\", \"endpoint\": \"192.168.97.3:9000\"}'",
-        "-e",
-        "AWS_ACCESS_KEY_ID=\"minio\"",
-        "-e",
-        "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
-        "-e",
-        "SKYRISE_ARTIFACT=scanOperator",
-        "-e",
-        "SKYRISE_DEBUG=${input:bool}",
-        "-e",
-        "SKYRISE_DEBUGIP=\"192.168.97.2\"",
-        "--privileged",
-        "--cap-add=SYS_PTRACE",
-        "--security-opt",
-        "seccomp=unconfined",
-        "--rm",
-        "-v",
-        "${workspaceFolder}/cmake-build-release/bin:/var/task/bin/",
-        "-v",
-        "${workspaceFolder}/cmake-build-release/lib:/tmp/cmake-build-release/lib", // alternative: use usr/local/lib64
-        "skyrise-run",
-        "/var/runtime/bootstrap_wrapper"
+        "./var/runtime/init"
       ],
       "dependsOn": "create debug container if not present"
     },
@@ -365,7 +244,6 @@
       "description": "The artifact to execute",
       "options": [
         "benchmarkDriver",
-        "orchestrator",
         "scanOperator",
         "skyriseNetworkBenchmark",
         "skyriseS3Benchmark"
@@ -378,12 +256,10 @@
       "options": [
         "all",
         "aws-lambda-package-benchmarkDriver",
-        "aws-lambda-package-orchestrator",
         "aws-lambda-package-scanOperator",
         "aws-lambda-package-skyriseNetworkBenchmark",
         "aws-lambda-package-skyriseS3Benchmark",
         "benchmarkDriver",
-        "orchestrator",
         "scanOperator",
         "skyriseNetworkBenchmark",
         "skyriseS3Benchmark"
