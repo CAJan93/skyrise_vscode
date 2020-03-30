@@ -166,6 +166,25 @@
     {
       // run an artifact that is specified by the user inside the debug container
       // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if skyrise-run starts first
+      "label": "run debug container Gtests",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-it",
+        "-v",
+        "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
+        "-v",
+        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // or use usr/local/lib64?
+        "skyrise-build",
+        "/bin/bash"
+      ],
+      "dependsOn": "create debug container if not present"
+    },
+    {
+      // run an artifact that is specified by the user inside the debug container
+      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if skyrise-run starts first
       "label": "run debug container scan",
       "type": "shell",
       "command": "docker",
