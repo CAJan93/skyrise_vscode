@@ -128,7 +128,7 @@
         "--rm",
         "-v",
         "${workspaceFolder}:/tmp",
-        "cpp_build_env",
+        "skyrise-build",
         "/bin/bash",
         "-c",
         "\"cd /tmp/cmake-build-debug && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_BUILD_TYPE=Debug\""
@@ -144,7 +144,7 @@
         "--rm",
         "-v",
         "${workspaceFolder}:/tmp",
-        "cpp_build_env",
+        "skyrise-build",
         "/bin/bash",
         "-c",
         "\"cd /tmp/cmake-build-release && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_BUILD_TYPE=Release\""
@@ -160,7 +160,7 @@
         "--rm",
         "-v",
         "${workspaceFolder}:/tmp",
-        "cpp_build_env",
+        "skyrise-build",
         "/bin/bash",
         "-c",
         "\"cd /tmp/cmake-build-debug && time make ${input:pickTarget}\""
@@ -175,7 +175,7 @@
         "--rm",
         "-v",
         "${workspaceFolder}:/tmp",
-        "cpp_build_env",
+        "skyrise-build",
         "/bin/bash",
         "-c",
         "\"cd /tmp/cmake-build-release && time make ${input:pickTarget}\""
@@ -183,7 +183,7 @@
     },
     {
       // run an artifact that is specified by the user inside the debug container
-      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if cpp_debug_env starts first
+      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if skyrise-run starts first
       "label": "run debug container networkBench (debug)",
       "type": "shell",
       "command": "docker",
@@ -210,14 +210,14 @@
         "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // or use usr/local/lib64?
-        "cpp_debug_env",
+        "skyrise-run",
         "/var/runtime/bootstrap_wrapper"
       ],
       "dependsOn": "create debug container if not present"
     },
     {
       // run an artifact that is specified by the user inside the debug container
-      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if cpp_debug_env starts first
+      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if skyrise-run starts first
       "label": "run debug container networkBench (release)",
       "type": "shell",
       "command": "docker",
@@ -244,14 +244,14 @@
         "${workspaceFolder}/cmake-build-release/bin:/var/task/bin/",
         "-v",
         "${workspaceFolder}/cmake-build-release/lib:/tmp/cmake-build-release/lib", // or use usr/local/lib64?
-        "cpp_debug_env",
+        "skyrise-run",
         "/var/runtime/bootstrap_wrapper"
       ],
       "dependsOn": "create debug container if not present"
     },
     {
       // run an artifact that is specified by the user inside the debug container
-      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if cpp_debug_env starts first
+      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if skyrise-run starts first
       "label": "run debug container scan (debug)",
       "type": "shell",
       "command": "docker",
@@ -278,14 +278,14 @@
         "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // alternative: use usr/local/lib64
-        "cpp_debug_env",
+        "skyrise-run",
         "/var/runtime/bootstrap_wrapper"
       ],
       "dependsOn": "create debug container if not present"
     },
     {
       // run an artifact that is specified by the user inside the debug container
-      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if cpp_debug_env starts first
+      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if skyrise-run starts first
       "label": "run debug container scan (release)",
       "type": "shell",
       "command": "docker",
@@ -312,49 +312,49 @@
         "${workspaceFolder}/cmake-build-release/bin:/var/task/bin/",
         "-v",
         "${workspaceFolder}/cmake-build-release/lib:/tmp/cmake-build-release/lib", // alternative: use usr/local/lib64
-        "cpp_debug_env",
+        "skyrise-run",
         "/var/runtime/bootstrap_wrapper"
       ],
       "dependsOn": "create debug container if not present"
     },
     {
-      // check if cpp_build_env exists, if not build it
+      // check if skyrise-build exists, if not build it
       "label": "create build container if not present",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "\"if [ -z \\\"$(docker image ls | grep cpp_build_env)\\\" ] ; then echo \\\"building missing image cpp_build_env\\\" && cd ${workspaceFolder}/third_party && docker build -t cpp_build_env --target skyrise-build -f ${workspaceFolder}/Dockerfile .; else echo \\\"image cpp_build_env already present\\\" ; fi\""
+        "\"if [ -z \\\"$(docker image ls | grep skyrise-build)\\\" ] ; then echo \\\"building missing image skyrise-build\\\" && cd ${workspaceFolder}/third_party && docker build -t skyrise-build --target skyrise-build -f ${workspaceFolder}/Dockerfile .; else echo \\\"image skyrise-build already present\\\" ; fi\""
       ]
     },
     {
-      // build/update cpp_build_env exists
+      // build/update skyrise-build exists
       "label": "create build container",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "cd ${workspaceFolder}/third_party && docker build -t cpp_build_env --target skyrise-build -f ${workspaceFolder}/Dockerfile ."
+        "cd ${workspaceFolder}/third_party && docker build -t skyrise-build --target skyrise-build -f ${workspaceFolder}/Dockerfile ."
       ]
     },
     {
-      // check if cpp_debug_env exists, if not build it. Container cpp_debug_env is used for creating debug builds, not for running them.
+      // check if skyrise-run exists, if not build it. Container skyrise-run is used for creating debug builds, not for running them.
       "label": "create debug container if not present",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "\"if [ -z \\\"$(docker image ls | grep cpp_debug_env)\\\" ] ; then echo \\\"building missing image cpp_debug_env\\\" && cd ${workspaceFolder}/third_party && docker build -t cpp_debug_env -f ${workspaceFolder}/Dockerfile .; else echo \\\"image cpp_debug_env already present\\\" ; fi\""
+        "\"if [ -z \\\"$(docker image ls | grep skyrise-run)\\\" ] ; then echo \\\"building missing image skyrise-run\\\" && cd ${workspaceFolder}/third_party && docker build -t skyrise-run -f ${workspaceFolder}/Dockerfile .; else echo \\\"image skyrise-run already present\\\" ; fi\""
       ]
     },
     {
-      // Build/update the cpp_debug_env
+      // Build/update the skyrise-run
       "label": "create debug container",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "\"cd ${workspaceFolder}/third_party && docker build -t cpp_debug_env -f ${workspaceFolder}/Dockerfile .\""
+        "\"cd ${workspaceFolder}/third_party && docker build -t skyrise-run -f ${workspaceFolder}/Dockerfile .\""
       ]
     }
   ],
