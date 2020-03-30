@@ -159,8 +159,7 @@
         "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // or use usr/local/lib64?
-        "skyrise-run",
-        "/var/runtime/init"
+        "skyrise-run"
       ],
       "dependsOn": "create debug container if not present"
     },
@@ -191,8 +190,7 @@
         "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // alternative: use usr/local/lib64
-        "skyrise-run",
-        "./var/runtime/init"
+        "skyrise-run"
       ],
       "dependsOn": "create debug container if not present"
     },
