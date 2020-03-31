@@ -147,9 +147,11 @@
         "-e",
         "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
         "-e",
-        "DEBUG=${input:bool}",
+        "SKYRISE_DEBUG=${input:bool}",
         "-e",
-        "ARTIFACT=skyriseNetworkBenchmark",
+        "SKYRISE_DEBUG_IP=\"192.168.97.3\"",
+        "-e",
+        "SKYRISE_ARTIFACT=skyriseNetworkBenchmark",
         "--privileged",
         "--cap-add=SYS_PTRACE",
         "--security-opt",
@@ -199,9 +201,11 @@
         "-e",
         "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
         "-e",
-        "ARTIFACT=scanOperator",
+        "SKYRISE_ARTIFACT=scanOperator",
         "-e",
-        "DEBUG=${input:bool}",
+        "SKYRISE_DEBUG=${input:bool}",
+        "-e",
+        "SKYRISE_DEBUG_IP=\"192.168.97.3\"",
         "--privileged",
         "--cap-add=SYS_PTRACE",
         "--security-opt",
@@ -283,7 +287,8 @@
         "skyriseNetworkBenchmark",
         "skyriseS3Benchmark",
         "helpers_lib",
-        "GTests"
+        "GTests",
+        "skyriseMicroBenchmarks"
       ]
     },
     {
