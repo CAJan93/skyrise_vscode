@@ -118,6 +118,48 @@
       "dependsOn": "create build container if not present"
     },
     {
+      "label": "cpplint current file (cppcheck)",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v",
+        "${workspaceFolder}:/tmp",
+        "skyrise-build",
+        "/bin/bash",
+        "-c",
+        "\"python /opt/cppcheck-1.90/cpplint.py --headers=hpp --extensions=hpp,cpp /tmp/${relativeFile}\""
+      ],
+      "dependsOn": "create build container if not present"
+    },
+    {
+      "label": "cpplint src dir (cppcheck)",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v",
+        "${workspaceFolder}:/tmp",
+        "skyrise-build",
+        "/bin/bash",
+        "-c",
+        "\"python /opt/cppcheck-1.90/cpplint.py --headers=hpp --extensions=hpp,cpp $(cat lint_files.txt)\""
+      ],
+      "dependsOn": "find sources and headers"
+    },
+    {
+      "label": "find sources and headers",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "\"find ${workspaceFolder}/src -name \"*.*pp\" | sort | tr '\\n' ' ' | sed \"s@/home/Jan.Mensch/Documents/skyrise-operators@/tmp@g\" > lint_files.txt\""
+      ],
+      "dependsOn": "create build container if not present"
+    },
+    {
       "label": "make target",
       "type": "shell",
       "command": "docker",
