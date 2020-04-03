@@ -284,7 +284,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "\"if [ -z \\\"$(docker image ls | grep skyrise-build)\\\" ] ; then echo \\\"building missing image skyrise-build\\\" && cd ${workspaceFolder}/third_party && docker build -t skyrise-build --target skyrise-build -f ${workspaceFolder}/Dockerfile .; else echo \\\"image skyrise-build already present\\\" ; fi\""
+        "\"if [ -z \\\"$(docker image ls | grep skyrise-build)\\\" ] ; then echo \\\"building missing image skyrise-build\\\" && cd ${workspaceFolder} && docker build -t skyrise-build --target skyrise-build -f ${workspaceFolder}/Dockerfile .; else echo \\\"image skyrise-build already present\\\" ; fi\""
       ]
     },
     {
@@ -294,7 +294,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "cd ${workspaceFolder}/third_party && docker build -t skyrise-build --target skyrise-build -f ${workspaceFolder}/Dockerfile ."
+        "cd ${workspaceFolder} && docker build -t skyrise-build --target skyrise-build -f ${workspaceFolder}/Dockerfile ."
       ]
     },
     {
@@ -304,7 +304,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "\"if [ -z \\\"$(docker image ls | grep skyrise-run)\\\" ] ; then echo \\\"building missing image skyrise-run\\\" && cd ${workspaceFolder}/third_party && docker build -t skyrise-run -f ${workspaceFolder}/Dockerfile .; else echo \\\"image skyrise-run already present\\\" ; fi\""
+        "\"if [ -z \\\"$(docker image ls | grep skyrise-run)\\\" ] ; then echo \\\"building missing image skyrise-run\\\" && cd ${workspaceFolder} && docker build -t skyrise-run -f ${workspaceFolder}/Dockerfile .; else echo \\\"image skyrise-run already present\\\" ; fi\""
       ]
     },
     {
@@ -314,7 +314,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "\"cd ${workspaceFolder}/third_party && docker build -t skyrise-run -f ${workspaceFolder}/Dockerfile .\""
+        "\"cd ${workspaceFolder} && docker build -t skyrise-run -f ${workspaceFolder}/Dockerfile .\""
       ]
     }
   ],
