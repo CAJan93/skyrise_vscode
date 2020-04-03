@@ -102,6 +102,22 @@
       ]
     },
     {
+      "label": "cmake + make all",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v",
+        "${workspaceFolder}:/tmp",
+        "skyrise-build",
+        "/bin/bash",
+        "-c",
+        "\"cd /tmp/cmake-build-debug && time make all\""
+      ],
+      "dependsOn": "cmake"
+    },
+    {
       "label": "cmake",
       "type": "shell",
       "command": "docker",
@@ -129,7 +145,7 @@
         "skyrise-build",
         "/bin/bash",
         "-c",
-        "\"python /opt/cppcheck-1.90/cpplint.py --headers=hpp --extensions=hpp,cpp /tmp/${relativeFile}\""
+        "\"python /opt/cppcheck-1.90/cpplint.py --filter=-legal/copyright,-whitespace/braces,-whitespace/comments,-legal/copyright,-build/c++11,-build/header_guard,-whitespace/newline,-whitespace/indent --headers=hpp --extensions=hpp,cpp /tmp/${relativeFile}\""
       ],
       "dependsOn": "create build container if not present"
     },
@@ -145,7 +161,7 @@
         "skyrise-build",
         "/bin/bash",
         "-c",
-        "\"python /opt/cppcheck-1.90/cpplint.py --headers=hpp --extensions=hpp,cpp $(cat lint_files.txt)\""
+        "\"python /opt/cppcheck-1.90/cpplint.py --filter=-legal/copyright,-whitespace/braces,-whitespace/comments,-legal/copyright,-build/c++11,-build/header_guard,-whitespace/newline,-whitespace/indent --headers=hpp --extensions=hpp,cpp $(cat lint_files.txt)\""
       ],
       "dependsOn": "find sources and headers"
     },
@@ -326,8 +342,6 @@
         "aws-lambda-package-skyriseS3Benchmark",
         "benchmarkDriver",
         "scanOperator",
-        "skyriseNetworkBenchmark",
-        "skyriseS3Benchmark",
         "helpers_lib",
         "GTests",
         "skyriseMicroBenchmarks"
