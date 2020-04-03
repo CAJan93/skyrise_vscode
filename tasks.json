@@ -67,7 +67,7 @@
         "run",
         "--rm",
         "-v",
-        "~/Documents/skyrise-operators/minio/data:/data",
+        "~/Documents/skyrise-operators/resources/minio/data:/data",
         "localminio"
       ],
       "dependsOn": "Build local minio instance if not present"
@@ -79,7 +79,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "\"if [ -z \\\"$(docker image ls | grep localminio)\\\" ] ; then echo \\\"building missing image localminio\\\" && echo -e \\\"Starting minio client\\nThe exposed port can be found in the Dockerfile of the localminio image instance (default 9000)\\nExposed Buckets are listed in skyrise-operators/minio/data\\n\\\" && cd ~/Documents/skyrise-operators/minio && docker build -t localminio .; else echo \\\"image localminio already present\\\" ; fi\""
+        "\"if [ -z \\\"$(docker image ls | grep localminio)\\\" ] ; then echo \\\"building missing image localminio\\\" && echo -e \\\"Starting minio client\\nThe exposed port can be found in the Dockerfile of the localminio image instance (default 9000)\\nExposed Buckets are listed in skyrise-operators/resources/minio/data\\n\\\" && cd ~/Documents/skyrise-operators/resources/minio && docker build -t localminio .; else echo \\\"image localminio already present\\\" ; fi\""
       ]
     },
     {
@@ -89,7 +89,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "cd ~/Documents/skyrise-operators/minio && docker build -t localminio ."
+        "cd ~/Documents/skyrise-operators/resources/minio && docker build -t localminio ."
       ]
     },
     {
