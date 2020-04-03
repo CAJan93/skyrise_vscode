@@ -199,7 +199,7 @@
       "args": [
         "run",
         "-e",
-        "AWS_LAMBDA_EVENT_BODY='{\"testDurationSec\": 60, \"s3Bucket\": \"develop\", \"s3Key\": \"KiB1\",\"requestType\": \"GET\",\"isDryRun\": false,\"lambdaSize\": 3008,\"storageName\": \"S3\",\"readMitigation\": -1,\"Endpoint\": \"192.168.97.3:9000\",\"writeMitigation\": -1,\"nrConcurrentRequests\": 2,\"doubleWrite\": false,\"csvHasHeader\": true}'",
+        "AWS_LAMBDA_EVENT_BODY='{\"durationSec\": 60, \"bucket\": \"develop\", \"key\": \"KiB1\",\"requestType\": \"GET\",\"isDryRun\": false,\"lambdaSizeMB\": 3008,\"storageSystem\": \"S3\",\"readMitigation\": -1,\"endpoint\": \"192.168.97.3:9000\",\"writeMitigation\": -1,\"intraFunctionParallelism\": 2,\"doubleWrite\": false}'",
         "-e",
         "AWS_ACCESS_KEY_ID=\"minio\"",
         "-e",
@@ -253,7 +253,7 @@
       "args": [
         "run",
         "-e",
-        "AWS_LAMBDA_EVENT_BODY='{ \"s3Bucket\": \"develop,develop,develop,test\", \"s3Key\": \"doc1,doc2,doc3,doc4\", \"Endpoint\": \"192.168.97.3:9000\"}'",
+        "AWS_LAMBDA_EVENT_BODY='{ \"bucket\": \"develop,develop,develop,test\", \"key\": \"doc1,doc2,doc3,doc4\", \"endpoint\": \"192.168.97.3:9000\"}'",
         "-e",
         "AWS_ACCESS_KEY_ID=\"minio\"",
         "-e",
