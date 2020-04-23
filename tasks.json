@@ -200,9 +200,6 @@
         "/bin/bash",
         "-c",
         "cd /tmp/scripts && chmod +x format.sh && cd /tmp/ && ./scripts/format.sh all && echo \"format done\""
-      ],
-      "problemMatcher": [
-        "$eslint-compact"
       ]
     },
     {
