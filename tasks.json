@@ -128,22 +128,6 @@
       "dependsOn": "create build container if not present"
     },
     {
-      "label": "cpplint src dir (cppcheck)",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-v",
-        "${workspaceFolder}:/tmp",
-        "skyrise-build",
-        "/bin/bash",
-        "-c",
-        "\"python /opt/cppcheck-1.90/cpplint.py --filter=-legal/copyright,-whitespace/braces,-whitespace/comments,-legal/copyright,-build/c++11,-build/header_guard,-whitespace/newline,-whitespace/indent --headers=hpp --extensions=hpp,cpp $(cat lint_files.txt)\""
-      ],
-      "dependsOn": "find sources and headers"
-    },
-    {
       "label": "find sources and headers",
       "type": "shell",
       "command": "bash",
