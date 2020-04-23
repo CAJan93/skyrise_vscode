@@ -188,6 +188,24 @@
       ]
     },
     {
+      "label": "format all",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v",
+        "${workspaceFolder}:/tmp",
+        "skyrise-build",
+        "/bin/bash",
+        "-c",
+        "cd /tmp/scripts && chmod +x format.sh && cd /tmp/ && ./scripts/format.sh all && echo \"format done\""
+      ],
+      "problemMatcher": [
+        "$eslint-compact"
+      ]
+    },
+    {
       "label": "run debug container networkBench",
       "type": "shell",
       "command": "docker",
