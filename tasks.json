@@ -2,7 +2,6 @@
   "version": "2.0.0",
   "tasks": [
     {
-      // remove all docker images that have a tage called "<none>"
       "label": "docker remove all UNTAGGED images",
       "type": "shell",
       "command": "bash",
@@ -30,7 +29,6 @@
       ]
     },
     {
-      // remove all docker images
       "label": "docker remove ALL images",
       "type": "shell",
       "command": "bash",
@@ -40,7 +38,6 @@
       ]
     },
     {
-      // abruptly stop all running containers
       "label": "Kill all running Docker containers",
       "type": "shell",
       "command": "bash",
@@ -50,16 +47,15 @@
       ]
     },
     {
-      "label": "upload .zip to S3://benchmark-source-bucket",
+      "label": "upload .zip to S3://src-bucket-1234",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "aws s3 cp cmake-build-debug/pkg/${input:pickArtifact}.zip s3://benchmark-source-bucket/${input:pickArtifact}.zip"
+        "aws s3 cp cmake-build-debug/pkg/${input:pickArtifact}.zip s3://src-bucket-1234/${input:pickArtifact}.zip"
       ]
     },
     {
-      // start an instance of minio
       "label": "Start local minio instance",
       "type": "shell",
       "command": "docker",
@@ -73,7 +69,6 @@
       "dependsOn": "Build local minio instance if not present"
     },
     {
-      // build minio from a Dockerfile, if not present
       "label": "Build local minio instance if not present",
       "type": "shell",
       "command": "bash",
@@ -83,7 +78,6 @@
       ]
     },
     {
-      // build/update minio from a Dockerfile
       "label": "Build local minio",
       "type": "shell",
       "command": "bash",
@@ -188,11 +182,12 @@
         "/bin/bash",
         "-c",
         "\"cd /tmp/cmake-build-debug && time make ${input:pickTarget}\""
+      ],
+      "problemMatcher": [
+        "$eslint-compact"
       ]
     },
     {
-      // run an artifact that is specified by the user inside the debug container
-      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if skyrise-run starts first
       "label": "run debug container networkBench",
       "type": "shell",
       "command": "docker",
@@ -218,14 +213,12 @@
         "-v",
         "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
         "-v",
-        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // or use usr/local/lib64?
+        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
         "skyrise-run"
       ],
       "dependsOn": "create debug container if not present"
     },
     {
-      // run an artifact that is specified by the user inside the debug container
-      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if skyrise-run starts first
       "label": "run debug container Gtests",
       "type": "shell",
       "command": "docker",
@@ -238,22 +231,20 @@
         "-v",
         "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
         "-v",
-        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // or use usr/local/lib64?
+        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
         "skyrise-build",
         "/bin/bash"
       ],
       "dependsOn": "create debug container if not present"
     },
     {
-      // run an artifact that is specified by the user inside the debug container
-      // use 192.168.97.2:9000 if minio starts first and 192.168.97.3:9000 if skyrise-run starts first
       "label": "run debug container scan",
       "type": "shell",
       "command": "docker",
       "args": [
         "run",
         "-e",
-        "AWS_LAMBDA_EVENT_BODY='{ \"bucket\": \"develop,develop,develop,test\", \"key\": \"doc1,doc2,doc3,doc4\", \"endpoint\": \"192.168.97.3:9000\"}'",
+        "AWS_LAMBDA_EVENT_BODY='{ \"s3Bucket\": \"develop\", \"s3Key\": \"lineitem_50k.csv\", \"endpoint\": \"192.168.97.3:9000\"}'",
         "-e",
         "AWS_ACCESS_KEY_ID=\"minio\"",
         "-e",
@@ -272,13 +263,12 @@
         "-v",
         "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
         "-v",
-        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // alternative: use usr/local/lib64
+        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
         "skyrise-run"
       ],
       "dependsOn": "create debug container if not present"
     },
     {
-      // check if skyrise-build exists, if not build it
       "label": "create build container if not present",
       "type": "shell",
       "command": "bash",
@@ -288,7 +278,6 @@
       ]
     },
     {
-      // build/update skyrise-build exists
       "label": "create build container",
       "type": "shell",
       "command": "bash",
@@ -298,7 +287,6 @@
       ]
     },
     {
-      // check if skyrise-run exists, if not build it. Container skyrise-run is used for creating debug builds, not for running them.
       "label": "create debug container if not present",
       "type": "shell",
       "command": "bash",
@@ -308,7 +296,6 @@
       ]
     },
     {
-      // Build/update the skyrise-run
       "label": "create debug container",
       "type": "shell",
       "command": "bash",
