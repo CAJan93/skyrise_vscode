@@ -128,22 +128,6 @@
       "dependsOn": "create build container if not present"
     },
     {
-      "label": "cpplint current file (cppcheck)",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-v",
-        "${workspaceFolder}:/tmp",
-        "skyrise-build",
-        "/bin/bash",
-        "-c",
-        "\"python /opt/cppcheck-1.90/cpplint.py --filter=-legal/copyright,-whitespace/braces,-whitespace/comments,-legal/copyright,-build/c++11,-build/header_guard,-whitespace/newline,-whitespace/indent --headers=hpp --extensions=hpp,cpp /tmp/${relativeFile}\""
-      ],
-      "dependsOn": "create build container if not present"
-    },
-    {
       "label": "cpplint src dir (cppcheck)",
       "type": "shell",
       "command": "docker",
@@ -200,6 +184,21 @@
         "/bin/bash",
         "-c",
         "cd /tmp/scripts && chmod +x format.sh && cd /tmp/ && ./scripts/format.sh all && echo \"format done\""
+      ]
+    },
+    {
+      "label": "cpplint",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v",
+        "${workspaceFolder}:/tmp",
+        "skyrise-build",
+        "/bin/bash",
+        "-c",
+        "cd /tmp/scripts && chmod +x lint.sh && cd /tmp/ && ./scripts/lint.sh all && echo \"lint done\""
       ]
     },
     {
