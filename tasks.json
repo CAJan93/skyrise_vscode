@@ -156,7 +156,7 @@
       ]
     },
     {
-      "label": "format all",
+      "label": "clang format all",
       "type": "shell",
       "command": "docker",
       "args": [
@@ -183,6 +183,44 @@
         "/bin/bash",
         "-c",
         "cd /tmp/scripts && chmod +x lint.sh && cd /tmp/ && ./scripts/lint.sh all && echo \"lint done\""
+      ]
+    },
+    {
+      "label": "clang tidy",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v",
+        "${workspaceFolder}:/tmp",
+        "-e",
+        "SKYRISE_SCR=/tmp/src",
+        "-e",
+        "SKYRISE_FIX=false",
+        "skyrise-build",
+        "/bin/bash",
+        "-c",
+        "cd /tmp/scripts && chmod +x clang_tidy_wrapper.sh && cd /tmp/ && ./scripts/clang_tidy_wrapper.sh && echo \"tidy done\""
+      ]
+    },
+    {
+      "label": "clang tidy fix",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v",
+        "${workspaceFolder}:/tmp",
+        "-e",
+        "SKYRISE_SCR=/tmp/src",
+        "-e",
+        "SKYRISE_FIX=true",
+        "skyrise-build",
+        "/bin/bash",
+        "-c",
+        "cd /tmp/scripts && chmod +x clang_tidy_wrapper.sh && cd /tmp/ && ./scripts/clang_tidy_wrapper.sh && echo \"tidy done\""
       ]
     },
     {
