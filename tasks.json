@@ -7,7 +7,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "for img in $(docker image ls | grep \"<none>\" | awk '\"'\"'{ print $3 }'\"'\"' ) ; do docker image rm $img ; done"
+        "for img in $(docker image ls | grep \"<none>\" | awk '\"'\"'{ print $3 }'\"'\"' ) ; do docker image rm -f $img ; done"
       ]
     },
     {
