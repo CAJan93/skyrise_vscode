@@ -11,16 +11,16 @@
       ]
     },
     {
-      "label": "docker remove all STOPPED containers",
+      "label": "docker remove all DANGLING images",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "docker rm $(docker ps -a -q)"
-      ]
+        "docker rmi $(docker images -f \"dangling=true\" -q)"
+       ]
     },
     {
-      "label": "check pragma once in all src/",
+      "label": "docker remove all STOPPED containers",
       "type": "shell",
       "command": "bash",
       "args": [
@@ -35,6 +35,15 @@
       "args": [
         "-c",
         "for img in $(docker image ls | awk '\"'\"'{ print $3 }'\"'\"' ) ; do docker image rm $img ; done"
+      ]
+    },
+    {
+      "label": "check pragma once in all src/",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "docker rm $(docker ps -a -q)"
       ]
     },
     {
