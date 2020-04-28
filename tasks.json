@@ -358,8 +358,7 @@
       "options": [
         "benchmarkDriver",
         "scanOperator",
-        "skyriseNetworkBenchmark",
-        "skyriseS3Benchmark"
+        "skyriseBenchmark"
       ]
     },
     {
@@ -376,7 +375,7 @@
         "scanOperator",
         "helpers_lib",
         "GTests",
-        "skyriseMicroBenchmarks"
+        "skyriseBenchmark"
       ]
     },
     {
