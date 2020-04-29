@@ -38,15 +38,6 @@
       ]
     },
     {
-      "label": "check pragma once in all src/",
-      "type": "shell",
-      "command": "bash",
-      "args": [
-        "-c",
-        "docker rm $(docker ps -a -q)"
-      ]
-    },
-    {
       "label": "Kill all running Docker containers",
       "type": "shell",
       "command": "bash",
@@ -249,7 +240,7 @@
         "-e",
         "SKYRISE_DEBUG_IP=\"192.168.97.3\"",
         "-e",
-        "SKYRISE_ARTIFACT=skyriseNetworkBenchmark",
+        "SKYRISE_ARTIFACT=skyriseBenchmark",
         "--privileged",
         "--cap-add=SYS_PTRACE",
         "--security-opt",
