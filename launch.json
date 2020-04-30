@@ -37,7 +37,8 @@
       "description": "The artifact to debug inside folder cmake-build-debug/bin",
       "options": [
         "skyriseMicroBenchmarks",
-        "scanOperator"
+        "scanOperator",
+        "benchmarkDriver"
       ]
     }
   ]

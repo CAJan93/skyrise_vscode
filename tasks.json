@@ -252,7 +252,32 @@
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
         "skyrise-run"
       ],
-      "dependsOn": "create debug container if not present"
+      "dependsOn": "create skyrise-run container if not present"
+    },
+    {
+      "label": "run debug container benchmarkDriver",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "-e",
+        "SKYRISE_DEBUG=${input:bool}",
+        "-e",
+        "SKYRISE_DEBUG_IP=\"192.168.97.3\"",
+        "-e",
+        "SKYRISE_ARTIFACT=benchmarkDriver",
+        "--privileged",
+        "--cap-add=SYS_PTRACE",
+        "--security-opt",
+        "seccomp=unconfined",
+        "--rm",
+        "-v",
+        "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
+        "-v",
+        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
+        "skyrise-run"
+      ],
+      "dependsOn": "create skyrise-run container if not present"
     },
     {
       "label": "run debug container Gtests",
@@ -267,11 +292,11 @@
         "-v",
         "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
         "-v",
-        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
+        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // usr/lib64
         "skyrise-build",
         "/bin/bash"
       ],
-      "dependsOn": "create debug container if not present"
+      "dependsOn": "create skyrise-run container if not present"
     },
     {
       "label": "run debug container scan",
@@ -302,7 +327,7 @@
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
         "skyrise-run"
       ],
-      "dependsOn": "create debug container if not present"
+      "dependsOn": "create skyrise-run container if not present"
     },
     {
       "label": "create build container if not present",
@@ -323,21 +348,40 @@
       ]
     },
     {
-      "label": "create debug container if not present",
+      "label": "create skyrise-run container if not present",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "\"if [ -z \\\"$(docker image ls | grep skyrise-run)\\\" ] ; then echo \\\"building missing image skyrise-run\\\" && cd ${workspaceFolder} && docker build -t skyrise-run -f ${workspaceFolder}/Dockerfile .; else echo \\\"image skyrise-run already present\\\" ; fi\""
+        "\"if [ -z \\\"$(docker image ls | grep skyrise-run)\\\" ] ; then echo \\\"building missing image skyrise-run\\\" && cd ${workspaceFolder} && docker build --target skyrise-run -t skyrise-run -f ${workspaceFolder}/Dockerfile .; else echo \\\"image skyrise-run already present\\\" ; fi\""
       ]
     },
     {
-      "label": "create debug container",
+      "label": "create skyrise-run container",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "\"cd ${workspaceFolder} && docker build -t skyrise-run -f ${workspaceFolder}/Dockerfile .\""
+        "\"cd ${workspaceFolder} && docker build -t skyrise-run --target skyrise-run -f ${workspaceFolder}/Dockerfile .\""
+      ]
+    }
+    ,
+    {
+      "label": "create skyrise-helper-run container if not present",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "\"if [ -z \\\"$(docker image ls | grep skyrise-helper-run)\\\" ] ; then echo \\\"building missing image skyrise-helper-run\\\" && cd ${workspaceFolder} && docker build --target skyrise-helper-run -t skyrise-helper-run -f ${workspaceFolder}/Dockerfile .; else echo \\\"image skyrise-helper-run already present\\\" ; fi\""
+      ]
+    },
+    {
+      "label": "create skyrise-helper-run container",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "\"cd ${workspaceFolder} && docker build -t skyrise-helper-run --target skyrise-helper-run -f ${workspaceFolder}/Dockerfile .\""
       ]
     }
   ],
