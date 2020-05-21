@@ -123,7 +123,7 @@
         "skyrise-build",
         "/bin/bash",
         "-c",
-        "\"cd /tmp/cmake-build-debug && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_BUILD_TYPE=Debug\""
+        "\"cd /tmp/cmake-build-debug && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++  -DCMAKE_BUILD_TYPE=Debug\""
       ],
       "dependsOn": "create build container if not present"
     },
@@ -280,7 +280,7 @@
       "dependsOn": "create skyrise-run container if not present"
     },
     {
-      "label": "run debug container Gtests",
+      "label": "run debug container skyriseTest",
       "type": "shell",
       "command": "docker",
       "args": [
@@ -305,7 +305,7 @@
       "args": [
         "run",
         "-e",
-        "AWS_LAMBDA_EVENT_BODY='{ \"s3Bucket\": \"develop\", \"s3Key\": \"lineitem_50k.csv\", \"endpoint\": \"192.168.97.3:9000\"}'",
+        "AWS_LAMBDA_EVENT_BODY='{ \"s3Bucket\": \"develop\", \"s3Key\": \"lineitem_2999671.csv\", \"endpoint\": \"192.168.97.3:9000\"}'",
         "-e",
         "AWS_ACCESS_KEY_ID=\"minio\"",
         "-e",
@@ -408,8 +408,9 @@
         "benchmarkDriver",
         "scanOperator",
         "helpers_lib",
-        "GTests",
-        "skyriseBenchmark"
+        "skyriseTest",
+        "skyriseBenchmark",
+        "orchestrator"
       ]
     },
     {
