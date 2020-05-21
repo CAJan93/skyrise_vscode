@@ -2,6 +2,17 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "git: get/update all submodules",
+      "type": "shell",
+      "command": "git",
+      "args": [
+        "submodule",
+        "update",
+        "--init",
+        "--recursive"  
+      ]
+    },
+    {
       "label": "docker remove all UNTAGGED images",
       "type": "shell",
       "command": "bash",
