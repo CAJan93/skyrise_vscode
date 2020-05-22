@@ -2,15 +2,24 @@
     "git.ignoreLimitWarning": true,
     "C_Cpp.default.cppStandard": "c++17",
     "C_Cpp.default.includePath": [
+        "${workspaceFolder}/src",
+        "${workspaceFolder}/src/benchmark",
+        "${workspaceFolder}/src/benchmark/benchmark_driver",
+        "${workspaceFolder}/src/benchmark/benchmark_driver/benchmark_configs",
+        "${workspaceFolder}/src/benchmark/network_benchmark",
+        "${workspaceFolder}/src/lib",
+        "${workspaceFolder}/src/lib/utils",
+        "${workspaceFolder}/src/test",
+        "${workspaceFolder}/src/test/utils",
+        "${workspaceFolder}/third_party/aws-lambda-cpp/include",
         "${workspaceFolder}/third_party/aws-sdk-cpp/aws-cpp-sdk-core/include",
         "${workspaceFolder}/third_party/aws-sdk-cpp/aws-cpp-sdk-s3/include",
-        "${workspaceFolder}/third_party/aws-lambda-cpp/include",
-        "${workspaceFolder}/third_party/googletest/googletest/include",
-        "${workspaceFolder}/third_party/googletest/googlemock/include",
         "${workspaceFolder}/third_party/csv-parser/include",
-        "${workspaceFolder}/third_party/json/include",
+        "${workspaceFolder}/third_party/cxxopts/include",
+        "${workspaceFolder}/third_party/googletest/googlemock/include",
+        "${workspaceFolder}/third_party/googletest/googletest/include",
         "${workspaceFolder}/third_party/jemalloc/include",
-        "${workspaceFolder}/third_party/orc/c++/include",
-        "${workspaceFolder}/third_party/cxxopts/include"
+        "${workspaceFolder}/third_party/json/include",
+        "${workspaceFolder}/third_party/orc/c++/include"
     ]
 }
