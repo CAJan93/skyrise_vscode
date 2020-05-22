@@ -16,6 +16,7 @@
         "${workspaceFolder}/third_party/googletest/googletest/include",
         "${workspaceFolder}/third_party/jemalloc/include",
         "${workspaceFolder}/third_party/json/include",
-        "${workspaceFolder}/third_party/orc/c++/include"
+        "${workspaceFolder}/third_party/orc/c++/include",
+        "${workspaceFolder}/third_party/aws-sdk-cpp/aws-cpp-sdk-lambda/include"
     ]
 }
