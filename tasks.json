@@ -115,13 +115,30 @@
         "--rm",
         "-v",
         "${workspaceFolder}:/tmp",
-        "skyrise-build",
+        "Jan.Mensch/skyrise:build",
         "/bin/bash",
         "-c",
         "\"cd /tmp/cmake-build-debug && time make all\""
       ],
       "dependsOn": "cmake"
     },
+    {
+      "label": "cmake with static analysis",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-v",
+        "${workspaceFolder}:/tmp",
+        "Jan.Mensch/skyrise:build",
+        "/bin/bash",
+        "-c",
+        "\"cd /tmp/cmake-build-debug && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++  -DCMAKE_BUILD_TYPE=Debug -DSKYRISE_ENABLE_CLANG_TIDY=OFF -DSKYRISE_ENABLE_CPPCHECK=OFF -DSKYRISE_ENABLE_CPPLINT=ON\""
+      ],
+      "dependsOn": "create build container if not present"
+    },
+
     {
       "label": "cmake",
       "type": "shell",
@@ -131,12 +148,11 @@
         "--rm",
         "-v",
         "${workspaceFolder}:/tmp",
-        "skyrise-build",
+        "Jan.Mensch/skyrise:build",
         "/bin/bash",
         "-c",
-        "\"cd /tmp/cmake-build-debug && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++  -DCMAKE_BUILD_TYPE=Debug\""
-      ],
-      "dependsOn": "create build container if not present"
+        "\"cd /tmp/cmake-build-debug && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++  -DCMAKE_BUILD_TYPE=Debug -DSKYRISE_ENABLE_CLANG_TIDY=ON -DSKYRISE_ENABLE_CPPCHECK=ON -DSKYRISE_ENABLE_CPPLINT=ON\""
+      ]// ,"dependsOn": "create build container if not present"
     },
     {
       "label": "find sources and headers",
@@ -157,7 +173,7 @@
         "--rm",
         "-v",
         "${workspaceFolder}:/tmp",
-        "skyrise-build",
+        "Jan.Mensch/skyrise:build",
         "/bin/bash",
         "-c",
         "\"cd /tmp/cmake-build-debug && time make ${input:pickTarget}\""
@@ -175,7 +191,7 @@
         "--rm",
         "-v",
         "${workspaceFolder}:/tmp",
-        "skyrise-build",
+        "Jan.Mensch/skyrise:build",
         "/bin/bash",
         "-c",
         "cd /tmp/scripts && chmod +x format.sh && cd /tmp/ && ./scripts/format.sh all && echo \"format done\""
@@ -190,7 +206,7 @@
         "--rm",
         "-v",
         "${workspaceFolder}:/tmp",
-        "skyrise-build",
+        "Jan.Mensch/skyrise:build",
         "/bin/bash",
         "-c",
         "cd /tmp/scripts && chmod +x lint.sh && cd /tmp/ && ./scripts/lint.sh all && echo \"lint done\""
@@ -209,7 +225,7 @@
         "SKYRISE_SCR=/tmp/src",
         "-e",
         "SKYRISE_FIX=false",
-        "skyrise-build",
+        "Jan.Mensch/skyrise:build",
         "/bin/bash",
         "-c",
         "cd /tmp/scripts && chmod +x clang_tidy_wrapper.sh && cd /tmp/ && ./scripts/clang_tidy_wrapper.sh && echo \"tidy done\""
@@ -228,7 +244,7 @@
         "SKYRISE_SCR=/tmp/src",
         "-e",
         "SKYRISE_FIX=true",
-        "skyrise-build",
+        "Jan.Mensch/skyrise:build",
         "/bin/bash",
         "-c",
         "cd /tmp/scripts && chmod +x clang_tidy_wrapper.sh && cd /tmp/ && ./scripts/clang_tidy_wrapper.sh && echo \"tidy done\""
@@ -304,7 +320,7 @@
         "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // usr/lib64
-        "skyrise-build",
+        "Jan.Mensch/skyrise:build",
         "/bin/bash"
       ],
       "dependsOn": "create skyrise-run container if not present"
@@ -346,7 +362,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "\"if [ -z \\\"$(docker image ls | grep skyrise-build)\\\" ] ; then echo \\\"building missing image skyrise-build\\\" && cd ${workspaceFolder} && docker build -t skyrise-build --target skyrise-build -f ${workspaceFolder}/Dockerfile .; else echo \\\"image skyrise-build already present\\\" ; fi\""
+        "\"if [ -z \\\"$(docker image ls | grep Jan.Mensch/skyrise:build)\\\" ] ; then echo \\\"building missing image Jan.Mensch/skyrise:build\\\" && cd ${workspaceFolder} && docker build -t Jan.Mensch/skyrise:build --target Jan.Mensch/skyrise:build -f ${workspaceFolder}/Dockerfile .; else echo \\\"image Jan.Mensch/skyrise:build already present\\\" ; fi\""
       ]
     },
     {
@@ -355,7 +371,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "cd ${workspaceFolder} && docker build -t skyrise-build --target skyrise-build -f ${workspaceFolder}/Dockerfile ."
+        "cd ${workspaceFolder} && docker build -t Jan.Mensch/skyrise:build --target Jan.Mensch/skyrise:build -f ${workspaceFolder}/Dockerfile ."
       ]
     },
     {
