@@ -382,7 +382,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "cd ${workspaceFolder} && ./script/docker/build_images.sh"
+        "cd ${workspaceFolder} && ./script/docker/build_images.sh --prune"
       ]
     }
   ],
