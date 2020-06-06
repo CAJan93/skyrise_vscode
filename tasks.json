@@ -293,7 +293,7 @@
         "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
-        "skyrise-run"
+        "Jan.Mensch/skyrise:run"
       ],
       "dependsOn": "create skyrise-run container if not present"
     },
@@ -318,7 +318,7 @@
         "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
-        "skyrise-run"
+        "Jan.Mensch/skyrise:run"
       ],
       "dependsOn": "create skyrise-run container if not present"
     },
@@ -368,7 +368,7 @@
         "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
-        "skyrise-run"
+        "Jan.Mensch/skyrise:run"
       ],
       "dependsOn": "create skyrise-run container if not present"
     },
@@ -396,7 +396,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "\"if [ -z \\\"$(docker image ls | grep skyrise-run)\\\" ] ; then echo \\\"building missing image skyrise-run\\\" && cd ${workspaceFolder} && docker build --target skyrise-run -t skyrise-run -f ${workspaceFolder}/Dockerfile .; else echo \\\"image skyrise-run already present\\\" ; fi\""
+        "\"if [ -z \\\"$(docker image ls | grep Jan.Mensch/skyrise:run)\\\" ] ; then echo \\\"building missing image Jan.Mensch/skyrise:run\\\" && cd ${workspaceFolder} && docker build --target skyrise-run -t skyrise-run -f ${workspaceFolder}/Dockerfile .; else echo \\\"image skyrise-run already present\\\" ; fi\""
       ]
     },
     {
@@ -405,7 +405,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "\"cd ${workspaceFolder} && docker build -t skyrise-run --target skyrise-run -f ${workspaceFolder}/Dockerfile .\""
+        "\"cd ${workspaceFolder} && docker build -t Jan.Mensch/skyrise:run --target skyrise-run -f ${workspaceFolder}/Dockerfile .\""
       ]
     }
     ,
