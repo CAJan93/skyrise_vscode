@@ -74,7 +74,7 @@
         "run",
         "--rm",
         "-v",
-        "~/Documents/skyrise-operators/resources/minio/data:/data",
+        "~/Documents/skyrise/resources/minio/data:/data",
         "localminio"
       ],
       "dependsOn": "Build local minio instance if not present"
@@ -85,7 +85,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "\"if [ -z \\\"$(docker image ls | grep localminio)\\\" ] ; then echo \\\"building missing image localminio\\\" && echo -e \\\"Starting minio client\\nThe exposed port can be found in the Dockerfile of the localminio image instance (default 9000)\\nExposed Buckets are listed in skyrise-operators/resources/minio/data\\n\\\" && cd ~/Documents/skyrise-operators/resources/minio && docker build -t localminio .; else echo \\\"image localminio already present\\\" ; fi\""
+        "\"if [ -z \\\"$(docker image ls | grep localminio)\\\" ] ; then echo \\\"building missing image localminio\\\" && echo -e \\\"Starting minio client\\nThe exposed port can be found in the Dockerfile of the localminio image instance (default 9000)\\nExposed Buckets are listed in skyrise-operators/resources/minio/data\\n\\\" && cd ~/Documents/skyrise/resources/minio && docker build --pull -t localminio .; else echo \\\"image localminio already present\\\" ; fi\""
       ]
     },
     {
@@ -94,7 +94,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "cd ~/Documents/skyrise-operators/resources/minio && docker build -t localminio ."
+        "cd ~/Documents/skyrise/resources/minio && docker build --pull -t localminio ."
       ]
     },
     {
@@ -348,11 +348,15 @@
       "args": [
         "run",
         "-e",
-        "AWS_LAMBDA_EVENT_BODY='{ \"s3Bucket\": \"develop\", \"s3Key\": \"lineitem_2999671.csv\", \"endpoint\": \"192.168.97.3:9000\"}'",
+        "AWS_LAMBDA_EVENT_BODY='{ \"s3Bucket\": \"develop\", \"s3Key\": \"lineitem_10k_lines.csv\", \"endpoint\": \"10.151.0.2:9000\"}'",
         "-e",
         "AWS_ACCESS_KEY_ID=\"minio\"",
         "-e",
         "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
+        "-e",
+        "SKYRISE_HEAPTRACK=false",
+        "-e",
+        "SKYRISE_HOTSPOT=false",
         "-e",
         "SKYRISE_ARTIFACT=scanOperator",
         "-e",
@@ -370,7 +374,7 @@
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
         "$USER/skyrise:run"
       ],
-      "dependsOn": "create containers"
+   //   "dependsOn": "create containers"
     },
     {
       "label": "create containers",
