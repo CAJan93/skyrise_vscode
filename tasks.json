@@ -150,7 +150,7 @@
         "$USER/skyrise:build",
         "/bin/bash",
         "-c",
-        "\"cd /tmp/cmake-build-debug && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++  -DCMAKE_BUILD_TYPE=Debug -DSKYRISE_ENABLE_CLANG_TIDY=ON -DSKYRISE_ENABLE_CPPCHECK=ON -DSKYRISE_ENABLE_CPPLINT=ON\""
+        "\"cd /tmp/cmake-build-debug && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++  -DCMAKE_BUILD_TYPE=Release -DSKYRISE_ENABLE_CLANG_TIDY=ON -DSKYRISE_ENABLE_CPPCHECK=OFF -DSKYRISE_ENABLE_CPPLINT=OFF\""
       ],
       "dependsOn": "create containers"
     },
@@ -347,6 +347,8 @@
       "command": "docker",
       "args": [
         "run",
+        "-p",
+        "1234:1234",
         "-e",
         "AWS_LAMBDA_EVENT_BODY='{ \"s3Bucket\": \"develop\", \"s3Key\": \"lineitem_10k_lines.csv\", \"endpoint\": \"10.151.0.2:9000\"}'",
         "-e",
@@ -362,7 +364,9 @@
         "-e",
         "SKYRISE_DEBUG=${input:bool}",
         "-e",
-        "SKYRISE_DEBUG_IP=\"192.168.97.3\"",
+        "SKYRISE_DEBUG_IP=\"127.0.0.1\"",// \"192.168.97.3\"",
+        "-e",
+        "SKYRISE_DEBUG_PORT=\"1234\"",
         "--privileged",
         "--cap-add=SYS_PTRACE",
         "--security-opt",
