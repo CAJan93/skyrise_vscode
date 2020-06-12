@@ -378,7 +378,36 @@
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
         "$USER/skyrise:run"
       ],
-   //   "dependsOn": "create containers"
+     "dependsOn": "create containers"
+    },
+    {
+      "label": "launch skyrise:run without artifact",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--entrypoint",
+        "\"\"",
+        "-it",
+        "-p",
+        "1234:1234",
+        "-e",
+        "AWS_ACCESS_KEY_ID=\"minio\"",
+        "-e",
+        "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
+        "--privileged",
+        "--cap-add=SYS_PTRACE",
+        "--security-opt",
+        "seccomp=unconfined",
+        "--rm",
+        "-v",
+        "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
+        "-v",
+        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
+        "$USER/skyrise:run",
+        "/bin/bash"
+      ],
+     "dependsOn": "create containers"
     },
     {
       "label": "create containers",
@@ -415,7 +444,8 @@
         "helpers_lib",
         "skyriseTest",
         "skyriseBenchmark",
-        "orchestrator"
+        "orchestrator",
+        "jsonSerializer"
       ]
     },
     {
