@@ -17,7 +17,8 @@
         "${workspaceFolder}/third_party/jemalloc/include",
         "${workspaceFolder}/third_party/json/include",
         "${workspaceFolder}/third_party/orc/c++/include",
-        "${workspaceFolder}/third_party/aws-sdk-cpp/aws-cpp-sdk-lambda/include"
+        "${workspaceFolder}/third_party/aws-sdk-cpp/aws-cpp-sdk-lambda/include", 
+        "${workspaceFolder}/third_party/boost-hana/include/"
     ],
     "files.associations": {
         "optional": "cpp",
@@ -89,6 +90,17 @@
         "variant": "cpp",
         "*.inc": "cpp",
         "typeindex": "cpp",
-        "*.def": "cpp"
+        "*.def": "cpp",
+        "*.ipp": "cpp",
+        "csetjmp": "cpp",
+        "any": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
+        "strstream": "cpp",
+        "cfenv": "cpp",
+        "complex": "cpp",
+        "rope": "cpp",
+        "slist": "cpp",
+        "scoped_allocator": "cpp"
     }
 }
