@@ -12,13 +12,15 @@
       "target": "127.0.0.1:1234",
       "remote": true,
       "autorun": [
+        "set solib-search-path ${workspaceRoot}/cmake-build-debug/lib/",
         "add-symbol-file ${workspaceRoot}/cmake-build-debug/bin/${input:pickArtifact}", //  ${workspaceRoot}/cmake-build-debug/bin/${input:pickArtifact}",
-        "directory ${workspaceRoot}/src/lib/:${workspaceRoot}/src/operators/", // ${workspaceRoot}/src/operators/scan_operator/",
+        "add-symbol-file ${workspaceRoot}/cmake-build-debug/lib/libskyrise.so",
+        "directory ${workspaceRoot}/src/lib/utils:${workspaceRoot}/src/lib/expression:${workspaceRoot}/src/lib/expression/evaluation:${workspaceRoot}/src/operators/:${workspaceRoot}/test/utils/",
         "set substitute-path /tmp/ /home/Jan.Mensch/Documents/skyrise/",
         "b main"
       ],
       "cwd": "${workspaceRoot}",
-      "gdbpath": "/usr/bin/gdb",
+      "gdbpath": "/usr/bin/gdb"
     }
   ],
   "inputs": [
@@ -26,10 +28,7 @@
       "type": "pickString",
       "id": "pickFolder",
       "description": "The directory of the source files inside /src/",
-      "options": [
-        "benchmark/",
-        "operators/scan_operator/"
-      ]
+      "options": ["benchmark/", "operators/scan_operator/"]
     },
     {
       "type": "pickString",
@@ -38,7 +37,9 @@
       "options": [
         "skyriseMicroBenchmarks",
         "scanOperator",
-        "benchmarkDriver"
+        "benchmarkDriver",
+        "jsonSerializerTest",
+        "evaluatorTest"
       ]
     }
   ]

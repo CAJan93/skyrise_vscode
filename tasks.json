@@ -5,12 +5,7 @@
       "label": "git: get/update all submodules",
       "type": "shell",
       "command": "git",
-      "args": [
-        "submodule",
-        "update",
-        "--init",
-        "--recursive"  
-      ]
+      "args": ["submodule", "update", "--init", "--recursive"]
     },
     {
       "label": "docker remove all UNTAGGED images",
@@ -25,19 +20,13 @@
       "label": "docker remove all DANGLING images",
       "type": "shell",
       "command": "bash",
-      "args": [
-        "-c",
-        "docker rmi $(docker images -f \"dangling=true\" -q)"
-       ]
+      "args": ["-c", "docker rmi $(docker images -f \"dangling=true\" -q)"]
     },
     {
       "label": "docker remove all STOPPED containers",
       "type": "shell",
       "command": "bash",
-      "args": [
-        "-c",
-        "docker rm $(docker ps -a -q)"
-      ]
+      "args": ["-c", "docker rm $(docker ps -a -q)"]
     },
     {
       "label": "docker remove ALL images",
@@ -52,10 +41,7 @@
       "label": "Kill all running Docker containers",
       "type": "shell",
       "command": "bash",
-      "args": [
-        "-c",
-        "docker kill $(docker ps -q)"
-      ]
+      "args": ["-c", "docker kill $(docker ps -q)"]
     },
     {
       "label": "upload .zip to S3://src-bucket-1234",
@@ -168,7 +154,7 @@
         "/bin/bash",
         "-c",
         "\"cd /tmp/cmake-build-debug && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++  -DCMAKE_BUILD_TYPE=Debug -DSKYRISE_ENABLE_CLANG_TIDY=OFF -DSKYRISE_ENABLE_CPPCHECK=OFF -DSKYRISE_ENABLE_CPPLINT=OFF\""
-      ]// ,"dependsOn": "create containers"
+      ] // ,"dependsOn": "create containers"
     },
     {
       "label": "find sources and headers",
@@ -194,9 +180,7 @@
         "-c",
         "\"cd /tmp/cmake-build-debug && time make ${input:pickTarget}\""
       ],
-      "problemMatcher": [
-        "$eslint-compact"
-      ]
+      "problemMatcher": ["$eslint-compact"]
     },
     {
       "label": "clang format all",
@@ -329,7 +313,6 @@
       "args": [
         "run",
         "--rm",
-        "-it",
         "-v",
         "${workspaceFolder}:/tmp",
         "-v",
@@ -337,9 +320,10 @@
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // usr/lib64
         "$USER/skyrise:build",
-        "/bin/bash"
-      ],
-      "dependsOn": "create containers"
+        "/bin/bash",
+        "-c",
+        "cd /var/task/bin/ && ./skyriseTest --gtest_filter=${input:testString}"
+      ] 
     },
     {
       "label": "run debug container scan",
@@ -364,7 +348,7 @@
         "-e",
         "SKYRISE_DEBUG=${input:bool}",
         "-e",
-        "SKYRISE_DEBUG_IP=\"127.0.0.1\"",// \"192.168.97.3\"",
+        "SKYRISE_DEBUG_IP=\"127.0.0.1\"", // \"192.168.97.3\"",
         "-e",
         "SKYRISE_DEBUG_PORT=\"1234\"",
         "--privileged",
@@ -378,7 +362,7 @@
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
         "$USER/skyrise:run"
       ],
-     "dependsOn": "create containers"
+      "dependsOn": "create containers"
     },
     {
       "label": "launch skyrise:run without artifact",
@@ -407,7 +391,7 @@
         "$USER/skyrise:run",
         "/bin/bash"
       ],
-     "dependsOn": "create containers"
+      "dependsOn": "create containers"
     },
     {
       "label": "create containers",
@@ -427,7 +411,20 @@
       "options": [
         "benchmarkDriver",
         "scanOperator",
-        "skyriseBenchmark"
+        "skyriseBenchmark",
+        "evaluatorTest"
+      ]
+    },
+    {
+      "type": "pickString",
+      "id": "testString",
+      "description": "the test suit that will be executed. Will be passed to gtest -gtest_filter",
+      "options": [
+        "*",
+        "Projection*",
+        "JsonSerializer*",
+        "Selection*",
+        "Evaluator*"
       ]
     },
     {
@@ -445,17 +442,14 @@
         "skyriseTest",
         "skyriseBenchmark",
         "orchestrator",
-        "jsonSerializer"
+        "evaluatorTest"
       ]
     },
     {
       "type": "pickString",
       "id": "bool",
       "description": "pick a boolean value",
-      "options": [
-        "true",
-        "false"
-      ]
+      "options": ["true", "false"]
     }
   ]
 }
