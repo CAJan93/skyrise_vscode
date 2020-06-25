@@ -37,12 +37,6 @@
   "inputs": [
     {
       "type": "pickString",
-      "id": "pickFolder",
-      "description": "The directory of the source files inside /src/",
-      "options": ["benchmark/", "operators/scan_operator/"]
-    },
-    {
-      "type": "pickString",
       "id": "pickArtifact",
       "description": "The artifact to debug inside folder cmake-build-debug/bin",
       "options": [
