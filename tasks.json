@@ -137,7 +137,8 @@
         "/bin/bash",
         "-c",
         "\"cd /tmp/cmake-build-debug && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++  -DCMAKE_BUILD_TYPE=Debug -DSKYRISE_ENABLE_CLANG_TIDY=ON -DSKYRISE_ENABLE_CPPCHECK=ON -DSKYRISE_ENABLE_CPPLINT=OFF -DSKYRISE_ENABLE_CLANG_FORMAT=ON\""
-      ] //,"dependsOn": "create containers"
+      ],
+      "dependsOn": "create containers"
     },
 
     {
@@ -153,7 +154,8 @@
         "/bin/bash",
         "-c",
         "\"cd /tmp/cmake-build-debug && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++  -DCMAKE_BUILD_TYPE=Debug -DSKYRISE_ENABLE_CLANG_TIDY=OFF -DSKYRISE_ENABLE_CPPCHECK=OFF -DSKYRISE_ENABLE_CPPLINT=OFF\""
-      ] // ,"dependsOn": "create containers"
+      ],
+      "dependsOn": "create containers"
     },
     {
       "label": "find sources and headers",
@@ -367,8 +369,8 @@
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
         "$USER/skyrise:run"
-      ]
-      // ,"dependsOn": "create containers"
+      ],
+      "dependsOn": "create containers"
     },
     {
       "label": "launch skyrise:run without artifact",
@@ -398,7 +400,8 @@
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
         "$USER/skyrise:run",
         "/bin/bash"
-      ] //, "dependsOn": "create containers"
+      ],
+      "dependsOn": "create containers"
     },
     {
       "label": "create containers",
