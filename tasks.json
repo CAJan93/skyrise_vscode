@@ -44,12 +44,12 @@
       "args": ["-c", "docker kill $(docker ps -q)"]
     },
     {
-      "label": "upload .zip to S3://src-bucket-1234",
+      "label": "upload .zip to S3://janm-src-bucket-1234",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "aws s3 cp cmake-build-debug/pkg/${input:pickArtifact}.zip s3://src-bucket-1234/${input:pickArtifact}.zip"
+        "aws s3 cp cmake-build-debug/pkg/${input:pickArtifact}.zip s3://janm-src-bucket-1234/${input:pickArtifact}.zip"
       ]
     },
     {
@@ -431,7 +431,6 @@
       "options": [
         "skyriseCoordinator",
         "benchmarkDriver",
-        "evaluatorTest",
         "scanOperator",
         "skyriseBenchmark"
       ]
@@ -471,7 +470,8 @@
         "skyriseConsole",
         "skyriseCoordinator",
         "skyriseTest", 
-        "skyrise"
+        "skyrise",
+        "xxhash"
       ]
     },
     {
