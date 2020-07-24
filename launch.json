@@ -40,11 +40,27 @@
       "id": "pickArtifact",
       "description": "The artifact to debug inside folder cmake-build-debug/bin",
       "options": [
-        "skyriseMicroBenchmarks",
-        "scanOperator",
+        "aggregateOperator",
+        "all",
+        "aws-lambda-package-benchmarkDriver",
+        "aws-lambda-package-scanOperator",
+        "aws-lambda-package-skyriseBenchmark",
+        "aws-lambda-package-skyriseCoordinator",
         "benchmarkDriver",
-        "jsonSerializerTest",
-        "evaluatorTest"
+        "clang-format-edit",
+        "helpers_lib",
+        "minimalFunction",
+        "monolithicOperator",
+        "orchestrator",
+        "scanOperator",
+        "simpleBenchmark",
+        "skyrise",
+        "skyriseBenchmark",
+        "skyriseBenchmarkLib",
+        "skyriseConsole",
+        "skyriseCoordinator",
+        "skyriseTest",
+        "xxhash"
       ]
     }
   ]
