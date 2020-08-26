@@ -2,6 +2,12 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "chmod to 644",
+      "type": "shell",
+      "command": "sudo",
+      "args": ["find", ".", "-type", "f", "-exec", "chmod", "644", "{}", "\\"]
+    },
+    {
       "label": "git: get/update all submodules",
       "type": "shell",
       "command": "git",
@@ -102,161 +108,21 @@
       ]
     },
     {
-      "label": "cmake + make all",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-v",
-        "${workspaceFolder}:/tmp",
-        "$USER/skyrise:build",
-        "/bin/bash",
-        "-c",
-        "\"cd /tmp/cmake-build-debug && time make all\""
-      ],
-      "dependsOn": "cmake"
-    },
-    {
-      "label": "cmake + make all + static analyisis",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-v",
-        "${workspaceFolder}:/tmp",
-        "$USER/skyrise:build",
-        "/bin/bash",
-        "-c",
-        "\"cd /tmp/cmake-build-debug && time make all\""
-      ],
-      "dependsOn": "cmake with static analysis"
-    },
-    {
-      "label": "cmake with static analysis",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-v",
-        "${workspaceFolder}:/tmp",
-        "$USER/skyrise:build",
-        "/bin/bash",
-        "-c",
-        "\"cd /tmp/cmake-build-debug && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++  -DCMAKE_BUILD_TYPE=Debug -DSKYRISE_ENABLE_CLANG_TIDY=ON -DSKYRISE_ENABLE_CPPCHECK=ON -DSKYRISE_ENABLE_CPPLINT=ON -DSKYRISE_ENABLE_CLANG_FORMAT=ON\""
-      ]
-      //, "dependsOn": "create containers"
-    },
-    {
-      "label": "cmake",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-v",
-        "${workspaceFolder}:/tmp",
-        "$USER/skyrise:build",
-        "/bin/bash",
-        "-c",
-        "\"cd /tmp/cmake-build-debug && cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++  -DCMAKE_BUILD_TYPE=Debug -DSKYRISE_ENABLE_CLANG_TIDY=OFF -DSKYRISE_ENABLE_CPPCHECK=OFF -DSKYRISE_ENABLE_CPPLINT=OFF\""
-      ]
-      //, "dependsOn": "create containers"
-    },
-    {
-      "label": "find sources and headers",
+      "label": "cmake + make target",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "\"find ${workspaceFolder}/src -name \"*.*pp\" | sort | tr '\\n' ' ' | sed \"s@/home/$USER/Documents/skyrise-operators@/tmp@g\" > lint_files.txt\""
-      ]
-      //, "dependsOn": "create containers"
-    },
-    {
-      "label": "make target",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-v",
-        "${workspaceFolder}:/tmp",
-        "$USER/skyrise:build",
-        "/bin/bash",
-        "-c",
-        "\"cd /tmp/cmake-build-debug && time make ${input:pickTargetOrArtivact}\""
-      ],
-      "problemMatcher": ["$eslint-compact"]
-    },
-    {
-      "label": "clang format all",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-v",
-        "${workspaceFolder}:/tmp",
-        "$USER/skyrise:build",
-        "/bin/bash",
-        "-c",
-        "cd /tmp/scripts && chmod +x format.sh && cd /tmp/ && ./scripts/format.sh all && echo \"format done\""
+        "./script/docker/build_project.sh --verbose --cmake -DPACKAGER_NO_LIBC=ON --build-type ${input:buildtype} --make-target ${input:pickTargetOrArtivact}"
       ]
     },
     {
-      "label": "cpplint",
+      "label": "cmake + make target + static analyzer",
       "type": "shell",
-      "command": "docker",
+      "command": "bash",
       "args": [
-        "run",
-        "--rm",
-        "-v",
-        "${workspaceFolder}:/tmp",
-        "$USER/skyrise:build",
-        "/bin/bash",
         "-c",
-        "cd /tmp/scripts && chmod +x lint.sh && cd /tmp/ && ./scripts/lint.sh all && echo \"lint done\""
-      ]
-    },
-    {
-      "label": "clang tidy",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-v",
-        "${workspaceFolder}:/tmp",
-        "-e",
-        "SKYRISE_SCR=/tmp/src",
-        "-e",
-        "SKYRISE_FIX=false",
-        "$USER/skyrise:build",
-        "/bin/bash",
-        "-c",
-        "cd /tmp/scripts && chmod +x clang_tidy_wrapper.sh && cd /tmp/ && ./scripts/clang_tidy_wrapper.sh && echo \"tidy done\""
-      ]
-    },
-    {
-      "label": "clang tidy fix",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-v",
-        "${workspaceFolder}:/tmp",
-        "-e",
-        "SKYRISE_SCR=/tmp/src",
-        "-e",
-        "SKYRISE_FIX=true",
-        "$USER/skyrise:build",
-        "/bin/bash",
-        "-c",
-        "cd /tmp/scripts && chmod +x clang_tidy_wrapper.sh && cd /tmp/ && ./scripts/clang_tidy_wrapper.sh && echo \"tidy done\""
+        "./script/docker/build_project.sh --verbose --build-type ${input:buildtype} --cmake '-DPACKAGER_NO_LIBC=ON -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DSKYRISE_ENABLE_CLANG_TIDY=ON -DSKYRISE_ENABLE_CPPCHECK=ON -DSKYRISE_ENABLE_CPPLINT=ON -DSKYRISE_ENABLE_CLANG_FORMAT=ON' --make-target ${input:pickTargetOrArtivact}"
       ]
     },
     {
@@ -287,8 +153,8 @@
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
         "$USER/skyrise:run"
-      ]
-      //, "dependsOn": "create containers"
+      ],
+      "dependsOn": "create containers"
     },
     {
       "label": "run debug container benchmarkDriver",
@@ -312,8 +178,8 @@
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
         "$USER/skyrise:run"
-      ]
-      //, "dependsOn": "create containers"
+      ],
+      "dependsOn": "create containers"
     },
     {
       "label": "run debug container skyriseTest",
@@ -378,8 +244,8 @@
         "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
         "$USER/skyrise:run"
-      ]
-      //, "dependsOn": "create containers"
+      ],
+      "dependsOn": "create containers"
     },
     {
       "label": "run debug container monolithic scan tcp-h q6",
@@ -387,17 +253,24 @@
       "command": "docker",
       "args": [
         "run",
+        "--entrypoint",
+        "\"\"",
+        "-it",
+        "-w",
+        "/",
         "-p",
-        "1234:1234",
+        "2159:2159",
         "-e",
         // tpc-h q6 monolithic
-        "AWS_LAMBDA_EVENT_BODY='{\"endpoint\": \"10.151.0.2:9000\",  \"s3BucketOutput\": \"scan-results-1234\", \"s3KeyOutput\": \"result_\", \"s3BucketInput\": \"develop\", \"s3KeyInput\": \"lineitem_10k_lines.csv\",  \"projectionFirst\": {  \"arithmetic_operator\": 2,  \"left_col_id\": 5,  \"right_col_id\": 6,  \"result_col_id\": 16,  \"result_type\": 1,  \"next_arithmetic\":  \"NULL\",  \"next_aggregate\":  \"NULL\",  \"next_simple_projection\": {  \"col_id\": 0,  \"keep_col\": 0,  \"next\": {  \"col_id\": 1,  \"keep_col\": 0,  \"next\": {  \"col_id\": 2,  \"keep_col\": 0,  \"next\": {  \"col_id\": 3,  \"keep_col\": 0,  \"next\": {  \"col_id\": 4,  \"keep_col\": 0,  \"next\": {  \"col_id\": 5,  \"keep_col\": 0,  \"next\": {  \"col_id\": 6,  \"keep_col\": 0,  \"next\": {  \"col_id\": 7,  \"keep_col\": 0,  \"next\": {  \"col_id\": 8,  \"keep_col\": 0,  \"next\": {  \"col_id\": 9,  \"keep_col\": 0,  \"next\": {  \"col_id\": 10,  \"keep_col\": 0,  \"next\": {  \"col_id\": 11,  \"keep_col\": 0,  \"next\": {  \"col_id\": 12,  \"keep_col\": 0,  \"next\": {  \"col_id\": 13,  \"keep_col\": 0,  \"next\": {  \"col_id\": 14,  \"keep_col\": 0,  \"next\": {  \"col_id\": 15,  \"keep_col\": 0,  \"next\":  \"NULL\" } } } } } } } } } } } } } } } } },  \"selectionFirst\": {  \"logical_operator\": 0,  \"left_operand_logic\": {  \"logical_operator\": 0,  \"left_operand_logic\": {  \"logical_operator\": 0,  \"left_operand_logic\":  \"NULL\",  \"right_operand_logic\":  \"NULL\",  \"left_operand_binary_predicate\": {  \"pred_cond\": 5,  \"col_id\": 10,  \"comp_val\":  \"1994-01-01 \" },  \"right_operand_binary_predicate\": {  \"pred_cond\": 2,  \"col_id\": 10,  \"comp_val\":  \"1995-01-01 \" } },  \"right_operand_logic\": {  \"logical_operator\": 0,  \"left_operand_logic\":  \"NULL\",  \"right_operand_logic\":  \"NULL\",  \"left_operand_binary_predicate\": {  \"pred_cond\": 4,  \"col_id\": 6,  \"comp_val\": 0.05 },  \"right_operand_binary_predicate\": {  \"pred_cond\": 2,  \"col_id\": 6,  \"comp_val\": 0.07 } },  \"left_operand_binary_predicate\":  \"NULL\",  \"right_operand_binary_predicate\":  \"NULL\" },  \"right_operand_logic\": {  \"logical_operator\": 1,  \"left_operand_logic\":  \"NULL\",  \"right_operand_logic\":  \"NULL\",  \"left_operand_binary_predicate\": {  \"pred_cond\": 2,  \"col_id\": 4,  \"comp_val\": 24 },  \"right_operand_binary_predicate\": {  \"pred_cond\": 2,  \"col_id\": 4,  \"comp_val\": 24 } },  \"left_operand_binary_predicate\":  \"NULL\",  \"right_operand_binary_predicate\":  \"NULL\" },  \"types\": [0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1],  \"projectionSecond\": {  \"agg_func\": 0,  \"col_id\": 16,  \"next_simple\":  \"NULL\" },  \"selectionSecond\": {  \"pred_cond\": 5,  \"col_id\": 16,  \"comp_val\": -2147483648 }}'",
+        "AWS_LAMBDA_EVENT_BODY='{\"endpoint\": \"10.151.0.2:9000\",  \"s3BucketOutput\": \"scan-results-1234\", \"s3KeyOutput\": \"result_\", \"s3BucketInput\": \"develop\", \"s3KeyInput\": \"line.1.csv\",  \"projectionFirst\": {  \"arithmetic_operator\": 2,  \"left_col_id\": 5,  \"right_col_id\": 6,  \"result_col_id\": 16,  \"result_type\": 1,  \"next_arithmetic\":  \"NULL\",  \"next_aggregate\":  \"NULL\",  \"next_simple_projection\": {  \"col_id\": 0,  \"keep_col\": 0,  \"next\": {  \"col_id\": 1,  \"keep_col\": 0,  \"next\": {  \"col_id\": 2,  \"keep_col\": 0,  \"next\": {  \"col_id\": 3,  \"keep_col\": 0,  \"next\": {  \"col_id\": 4,  \"keep_col\": 0,  \"next\": {  \"col_id\": 5,  \"keep_col\": 0,  \"next\": {  \"col_id\": 6,  \"keep_col\": 0,  \"next\": {  \"col_id\": 7,  \"keep_col\": 0,  \"next\": {  \"col_id\": 8,  \"keep_col\": 0,  \"next\": {  \"col_id\": 9,  \"keep_col\": 0,  \"next\": {  \"col_id\": 10,  \"keep_col\": 0,  \"next\": {  \"col_id\": 11,  \"keep_col\": 0,  \"next\": {  \"col_id\": 12,  \"keep_col\": 0,  \"next\": {  \"col_id\": 13,  \"keep_col\": 0,  \"next\": {  \"col_id\": 14,  \"keep_col\": 0,  \"next\": {  \"col_id\": 15,  \"keep_col\": 0,  \"next\":  \"NULL\" } } } } } } } } } } } } } } } } },  \"selectionFirst\": {  \"logical_operator\": 0,  \"left_operand_logic\": {  \"logical_operator\": 0,  \"left_operand_logic\": {  \"logical_operator\": 0,  \"left_operand_logic\":  \"NULL\",  \"right_operand_logic\":  \"NULL\",  \"left_operand_binary_predicate\": {  \"pred_cond\": 5,  \"col_id\": 10,  \"comp_val\":  \"1994-01-01 \" },  \"right_operand_binary_predicate\": {  \"pred_cond\": 2,  \"col_id\": 10,  \"comp_val\":  \"1995-01-01 \" } },  \"right_operand_logic\": {  \"logical_operator\": 0,  \"left_operand_logic\":  \"NULL\",  \"right_operand_logic\":  \"NULL\",  \"left_operand_binary_predicate\": {  \"pred_cond\": 4,  \"col_id\": 6,  \"comp_val\": 0.05 },  \"right_operand_binary_predicate\": {  \"pred_cond\": 2,  \"col_id\": 6,  \"comp_val\": 0.07 } },  \"left_operand_binary_predicate\":  \"NULL\",  \"right_operand_binary_predicate\":  \"NULL\" },  \"right_operand_logic\": {  \"logical_operator\": 1,  \"left_operand_logic\":  \"NULL\",  \"right_operand_logic\":  \"NULL\",  \"left_operand_binary_predicate\": {  \"pred_cond\": 2,  \"col_id\": 4,  \"comp_val\": 24 },  \"right_operand_binary_predicate\": {  \"pred_cond\": 2,  \"col_id\": 4,  \"comp_val\": 24 } },  \"left_operand_binary_predicate\":  \"NULL\",  \"right_operand_binary_predicate\":  \"NULL\" },  \"types\": [0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1],  \"projectionSecond\": {  \"agg_func\": 0,  \"col_id\": 16,  \"next_simple\":  \"NULL\" },  \"selectionSecond\": {  \"pred_cond\": 5,  \"col_id\": 16,  \"comp_val\": 2.2250738585072014e-308 }}'",
         "-e",
         "AWS_ACCESS_KEY_ID=\"minio\"",
         "-e",
         "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
         "-e",
-        "SKYRISE_HEAPTRACK=false",
+        "SKYRISE_DEBUG_TOOL=heaptrack",
+        "-e",
+        "SKYRISE_HEAPTRACK=true",
         "-e",
         "SKYRISE_HOTSPOT=false",
         "-e",
@@ -416,10 +289,13 @@
         "-v",
         "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
         "-v",
+        "${workspaceFolder}/debug:/var/task/debug/",
+        "-v",
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
-        "$USER/skyrise:run"
-      ]
-      //, "dependsOn": "create containers"
+        "$USER/skyrise:run",
+        "/bin/bash"
+      ],
+      "dependsOn": "create containers"
     },
     {
       "label": "launch skyrise:run without artifact",
@@ -449,8 +325,8 @@
         "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
         "$USER/skyrise:run",
         "/bin/bash"
-      ]
-      // ,"dependsOn": "create containers"
+      ],
+      "dependsOn": "create containers"
     },
     {
       "label": "create containers",
@@ -486,12 +362,19 @@
     },
     {
       "type": "pickString",
+      "id": "buildtype",
+      "description": "The build type used by cmake",
+      "options": ["Debug", "Release"]
+    },
+    {
+      "type": "pickString",
       "id": "pickTargetOrArtivact",
       "description": "The artifact to build/execute",
       "options": [
         "aggregateOperator",
         "all",
         "aws-lambda-package-benchmarkDriver",
+        "aws-lambda-package-monolithicOperator",
         "aws-lambda-package-scanOperator",
         "aws-lambda-package-skyriseBenchmark",
         "aws-lambda-package-skyriseCoordinator",
@@ -508,8 +391,8 @@
         "skyriseBenchmarkLib",
         "skyriseConsole",
         "skyriseCoordinator",
-        "skyriseTest",
-        "xxhash"
+        "skyriseFunctionMinimal",
+        "skyriseTest"
       ]
     },
     {
