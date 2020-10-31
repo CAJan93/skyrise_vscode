@@ -2,19 +2,13 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "chmod to 644",
-      "type": "shell",
-      "command": "sudo",
-      "args": ["find", ".", "-type", "f", "-exec", "chmod", "644", "{}", "\\"]
-    },
-    {
       "label": "git: get/update all submodules",
       "type": "shell",
       "command": "git",
       "args": ["submodule", "update", "--init", "--recursive"]
     },
     {
-      "label": "docker remove all UNTAGGED images",
+      "label": "DOCKER remove all UNTAGGED images",
       "type": "shell",
       "command": "bash",
       "args": [
@@ -23,171 +17,81 @@
       ]
     },
     {
-      "label": "docker remove all DANGLING images",
+      "label": "DOCKER remove all DANGLING images",
       "type": "shell",
       "command": "bash",
       "args": ["-c", "docker rmi $(docker images -f \"dangling=true\" -q)"]
     },
     {
-      "label": "docker remove all STOPPED containers",
+      "label": "DOCKER remove all STOPPED containers",
       "type": "shell",
       "command": "bash",
       "args": ["-c", "docker rm $(docker ps -a -q)"]
     },
     {
-      "label": "docker remove ALL images",
-      "type": "shell",
-      "command": "bash",
-      "args": [
-        "-c",
-        "for img in $(docker image ls | awk '\"'\"'{ print $3 }'\"'\"' ) ; do docker image rm $img ; done"
-      ]
-    },
-    {
-      "label": "Kill all running Docker containers",
+      "label": "DOCKER KILL all running containers",
       "type": "shell",
       "command": "bash",
       "args": ["-c", "docker kill $(docker ps -q)"]
     },
     {
-      "label": "upload .zip to S3://janm-src-bucket-1234",
+      "label": "cmake + ninja target",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "aws s3 cp cmake-build-debug/pkg/${input:pickTargetOrArtivact}.zip s3://janm-src-bucket-1234/${input:pickTargetOrArtivact}.zip"
+        "./script/docker/build_project.sh --verbose --build-type ${input:buildtype} --cmake \"-DPACKAGER_NO_LIBC=ON -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DSKYRISE_ENABLE_CLANG_TIDY=OFF -DSKYRISE_ENABLE_CPPCHECK=OFF -DSKYRISE_ENABLE_CPPLINT=OFF -DSKYRISE_ENABLE_CLANG_FORMAT=OFF\" --make-target ${input:pickTargetOrArtivact}"
       ]
     },
     {
-      "label": "upload .zip to S3://janm-src-bucket-1234vocareum",
+      "label": "cmake + ninja target + Clang tidy",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "aws s3 cp cmake-build-debug/pkg/${input:pickTargetOrArtivact}.zip s3://janm-src-bucket-1234vocareum/${input:pickTargetOrArtivact}.zip --profile vocareum"
+        "./script/docker/build_project.sh --verbose --build-type ${input:buildtype} --cmake \"-DPACKAGER_NO_LIBC=ON -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DSKYRISE_ENABLE_CLANG_TIDY=ON -DSKYRISE_ENABLE_CPPCHECK=OFF -DSKYRISE_ENABLE_CPPLINT=OFF -DSKYRISE_ENABLE_CLANG_FORMAT=OFF\" --make-target ${input:pickTargetOrArtivact}"
       ]
     },
     {
-      "label": "Start local minio instance",
+      "label": "clang tidy --fix",
+      "type": "shell",
+      "command": "python3",
+      "args": [
+        "./script/run_clang_format.py",
+        "--clang_format_binary",
+        "clang-format",
+        "--source_dir",
+        "src",
+        "--fix"
+      ]
+    },
+    {
+      "label": "cmake + ninja target + Clang tidy + clang format",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "./script/docker/build_project.sh --verbose --build-type ${input:buildtype} --cmake \"-DPACKAGER_NO_LIBC=ON -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DSKYRISE_ENABLE_CLANG_TIDY=ON -DSKYRISE_ENABLE_CPPCHECK=ON -DSKYRISE_ENABLE_CPPLINT=OFF -DSKYRISE_ENABLE_CLANG_FORMAT=ON\" --make-target ${input:pickTargetOrArtivact}"
+      ]
+    },
+    {
+      "label": "cmake + ninja target + Clang tidy + clang format + cpplint",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "./script/docker/build_project.sh --verbose --build-type ${input:buildtype} --cmake \"-DPACKAGER_NO_LIBC=ON -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DSKYRISE_ENABLE_CLANG_TIDY=ON -DSKYRISE_ENABLE_CPPCHECK=ON -DSKYRISE_ENABLE_CPPLINT=ON -DSKYRISE_ENABLE_CLANG_FORMAT=ON\" --make-target ${input:pickTargetOrArtivact}"
+      ]
+    },
+    {
+      "label": "run skyriseTest",
       "type": "shell",
       "command": "docker",
       "args": [
         "run",
         "--rm",
-        "-v",
-        "~/Documents/skyrise/resources/minio/data:/data",
-        "localminio"
-      ],
-      "dependsOn": "Build local minio instance if not present"
-    },
-    {
-      "label": "Build local minio instance if not present",
-      "type": "shell",
-      "command": "bash",
-      "args": [
-        "-c",
-        "\"if [ -z \\\"$(docker image ls | grep localminio)\\\" ] ; then echo \\\"building missing image localminio\\\" && echo -e \\\"Starting minio client\\nThe exposed port can be found in the Dockerfile of the localminio image instance (default 9000)\\nExposed Buckets are listed in skyrise-operators/resources/minio/data\\n\\\" && cd ~/Documents/skyrise/resources/minio && docker build --pull -t localminio .; else echo \\\"image localminio already present\\\" ; fi\""
-      ]
-    },
-    {
-      "label": "Build local minio",
-      "type": "shell",
-      "command": "bash",
-      "args": [
-        "-c",
-        "cd ~/Documents/skyrise/resources/minio && docker build --pull -t localminio ."
-      ]
-    },
-    {
-      "label": "remove result files",
-      "type": "shell",
-      "command": "bash",
-      "args": [
-        "-c",
-        "\"for file in $(ls minio/data/results/ | grep -v \\\"readme.txt\\\" ); do rm -f \\\"minio/data/results/$(file)\\\" ; done\""
-      ]
-    },
-    {
-      "label": "cmake + make target",
-      "type": "shell",
-      "command": "bash",
-      "args": [
-        "-c",
-        "./script/docker/build_project.sh --verbose --cmake -DPACKAGER_NO_LIBC=ON --build-type ${input:buildtype} --make-target ${input:pickTargetOrArtivact}"
-      ]
-    },
-    {
-      "label": "cmake + make target + static analyzer",
-      "type": "shell",
-      "command": "bash",
-      "args": [
-        "-c",
-        "./script/docker/build_project.sh --verbose --build-type ${input:buildtype} --cmake '-DPACKAGER_NO_LIBC=ON -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DSKYRISE_ENABLE_CLANG_TIDY=ON -DSKYRISE_ENABLE_CPPCHECK=ON -DSKYRISE_ENABLE_CPPLINT=ON -DSKYRISE_ENABLE_CLANG_FORMAT=ON' --make-target ${input:pickTargetOrArtivact}"
-      ]
-    },
-    {
-      "label": "run debug container networkBench",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
         "-e",
-        "AWS_LAMBDA_EVENT_BODY='{\"durationSec\": 60, \"bucket\": \"develop\", \"key\": \"KiB1\",\"requestType\": \"GET\",\"isDryRun\": false,\"lambdaSizeMB\": 3008,\"storageSystem\": \"S3\",\"readMitigation\": -1,\"endpoint\": \"127.0.0.1:9000\",\"writeMitigation\": -1,\"intraFunctionParallelism\": 2,\"doubleWrite\": false}'",
-        "-e",
-        "AWS_ACCESS_KEY_ID=\"minio\"",
-        "-e",
-        "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
-        "-e",
-        "SKYRISE_DEBUG=${input:bool}",
-        "-e",
-        "SKYRISE_DEBUG_IP=\"192.168.97.3\"",
-        "-e",
-        "SKYRISE_ARTIFACT=skyriseBenchmark",
-        "--privileged",
-        "--cap-add=SYS_PTRACE",
-        "--security-opt",
-        "seccomp=unconfined",
-        "--rm",
-        "-v",
-        "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
-        "-v",
-        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
-        "$USER/skyrise:run"
-      ],
-      "dependsOn": "create containers"
-    },
-    {
-      "label": "run debug container benchmarkDriver",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
-        "-e",
-        "SKYRISE_DEBUG=${input:bool}",
-        "-e",
-        "SKYRISE_DEBUG_IP=\"192.168.97.3\"",
-        "-e",
-        "SKYRISE_ARTIFACT=benchmarkDriver",
-        "--privileged",
-        "--cap-add=SYS_PTRACE",
-        "--security-opt",
-        "seccomp=unconfined",
-        "--rm",
-        "-v",
-        "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
-        "-v",
-        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
-        "$USER/skyrise:run"
-      ],
-      "dependsOn": "create containers"
-    },
-    {
-      "label": "run debug container skyriseTest",
-      "type": "shell",
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
+        "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/tmp/cmake-build-debug/lib:/tmp/cmake-build-debug/lib/lib64",
         "-v",
         "${workspaceFolder}:/tmp",
         "-v",
@@ -197,105 +101,50 @@
         "$USER/skyrise:build",
         "/bin/bash",
         "-c",
-        "cd /var/task/bin/ && ./skyriseTest --gtest_filter=${input:testString}"
+        "cd /var/task/bin/ && ./skyriseTest --gtest_filter=${input:testString} --gmock_verbose=info --gtest_stack_trace_depth=100"
       ]
     },
     {
-      "label": "run debug container non-monolithic scan tcp-h q6",
+      "label": "run skyriseTest",
       "type": "shell",
       "command": "docker",
       "args": [
         "run",
-        "-p",
-        "1234:1234",
-        "-e",
-        // tpc-h q6
-        // careful! different input/output!
-        "AWS_LAMBDA_EVENT_BODY='{\"s3BucketOutput\": \"scan-results-1234\", \"s3KeyOutput\": \"result_stuff_\", \"s3BucketInput\": \"test,test,test,test,test,test,test,test,test,test\", \"s3KeyInput\": \"lineitem.csv.0,lineitem.csv.1,lineitem.csv.10,lineitem.csv.100,lineitem.csv.101,lineitem.csv.102,lineitem.csv.103,lineitem.csv.104,lineitem.csv.105,lineitem.csv.106\", \"endpoint\": \"10.151.0.2:9000\", \"projection\":{\"arithmetic_operator\":2,\"left_col_id\":5,\"right_col_id\":6,\"result_col_id\":16,\"result_type\":1,\"next_arithmetic\":\"NULL\",\"next_simple_projection\":{\"col_id\":0,\"keep_col\":0,\"next\":{\"col_id\":1,\"keep_col\":0,\"next\":{\"col_id\":2,\"keep_col\":0,\"next\":{\"col_id\":3,\"keep_col\":0,\"next\":{\"col_id\":4,\"keep_col\":0,\"next\":{\"col_id\":5,\"keep_col\":0,\"next\":{\"col_id\":6,\"keep_col\":0,\"next\":{\"col_id\":7,\"keep_col\":0,\"next\":{\"col_id\":8,\"keep_col\":0,\"next\":{\"col_id\":9,\"keep_col\":0,\"next\":{\"col_id\":10,\"keep_col\":0,\"next\":{\"col_id\":11,\"keep_col\":0,\"next\":{\"col_id\":12,\"keep_col\":0,\"next\":{\"col_id\":13,\"keep_col\":0,\"next\":{\"col_id\":14,\"keep_col\":0,\"next\":{\"col_id\":15,\"keep_col\":0,\"next\":\"NULL\"}}}}}}}}}}}}}}}}},\"selection\":{\"logical_operator\":0,\"left_operand_logic\":{\"logical_operator\":0,\"left_operand_logic\":{\"logical_operator\":0,\"left_operand_logic\":\"NULL\",\"right_operand_logic\":\"NULL\",\"left_operand_binary_predicate\":{\"pred_cond\":5,\"col_id\":10,\"comp_val\":\"1994-01-01\"},\"right_operand_binary_predicate\":{\"pred_cond\":2,\"col_id\":10,\"comp_val\":\"1995-01-01\"}},\"right_operand_logic\":{\"logical_operator\":0,\"left_operand_logic\":\"NULL\",\"right_operand_logic\":\"NULL\",\"left_operand_binary_predicate\":{\"pred_cond\":4,\"col_id\":6,\"comp_val\":0.05},\"right_operand_binary_predicate\":{\"pred_cond\":2,\"col_id\":6,\"comp_val\":0.07}},\"left_operand_binary_predicate\":\"NULL\",\"right_operand_binary_predicate\":\"NULL\"},\"right_operand_logic\":{\"logical_operator\":1,\"left_operand_logic\":\"NULL\",\"right_operand_logic\":\"NULL\",\"left_operand_binary_predicate\":{\"pred_cond\":2,\"col_id\":4,\"comp_val\":24},\"right_operand_binary_predicate\":{\"pred_cond\":2,\"col_id\":4,\"comp_val\":24}},\"left_operand_binary_predicate\":\"NULL\",\"right_operand_binary_predicate\":\"NULL\"},\"types\":[0,0,0,0,0,1,1,1,2,2,2,2,2,2,2,2,1]}'",
-        // tpc-h q6, result casted to int
-        //  "AWS_LAMBDA_EVENT_BODY='{  \"s3BucketOutput\": \"scan-results-1234\", \"s3KeyOutput\": \"result_\", \"s3BucketInput\": \"develop\", \"s3KeyInput\": \"lineitem_10k_lines.csv\", \"endpoint\": \"10.151.0.4:9000\", \"projection\":{\"arithmetic_operator\":2,\"left_col_id\":5,\"right_col_id\":6,\"result_col_id\":16,\"result_type\":0,\"next_arithmetic\":\"NULL\",\"next_simple_projection\":{\"col_id\":0,\"keep_col\":0,\"next\":{\"col_id\":1,\"keep_col\":0,\"next\":{\"col_id\":2,\"keep_col\":0,\"next\":{\"col_id\":3,\"keep_col\":0,\"next\":{\"col_id\":4,\"keep_col\":0,\"next\":{\"col_id\":5,\"keep_col\":0,\"next\":{\"col_id\":6,\"keep_col\":0,\"next\":{\"col_id\":7,\"keep_col\":0,\"next\":{\"col_id\":8,\"keep_col\":0,\"next\":{\"col_id\":9,\"keep_col\":0,\"next\":{\"col_id\":10,\"keep_col\":0,\"next\":{\"col_id\":11,\"keep_col\":0,\"next\":{\"col_id\":12,\"keep_col\":0,\"next\":{\"col_id\":13,\"keep_col\":0,\"next\":{\"col_id\":14,\"keep_col\":0,\"next\":{\"col_id\":15,\"keep_col\":0,\"next\":\"NULL\"}}}}}}}}}}}}}}}}},\"selection\":{\"logical_operator\":0,\"left_operand_logic\":{\"logical_operator\":0,\"left_operand_logic\":{\"logical_operator\":0,\"left_operand_logic\":\"NULL\",\"right_operand_logic\":\"NULL\",\"left_operand_binary_predicate\":{\"pred_cond\":5,\"col_id\":10,\"comp_val\":\"1994-01-01\"},\"right_operand_binary_predicate\":{\"pred_cond\":2,\"col_id\":10,\"comp_val\":\"1995-01-01\"}},\"right_operand_logic\":{\"logical_operator\":0,\"left_operand_logic\":\"NULL\",\"right_operand_logic\":\"NULL\",\"left_operand_binary_predicate\":{\"pred_cond\":4,\"col_id\":6,\"comp_val\":0.05},\"right_operand_binary_predicate\":{\"pred_cond\":2,\"col_id\":6,\"comp_val\":0.07}},\"left_operand_binary_predicate\":\"NULL\",\"right_operand_binary_predicate\":\"NULL\"},\"right_operand_logic\":{\"logical_operator\":1,\"left_operand_logic\":\"NULL\",\"right_operand_logic\":\"NULL\",\"left_operand_binary_predicate\":{\"pred_cond\":2,\"col_id\":4,\"comp_val\":24},\"right_operand_binary_predicate\":{\"pred_cond\":2,\"col_id\":4,\"comp_val\":24}},\"left_operand_binary_predicate\":\"NULL\",\"right_operand_binary_predicate\":\"NULL\"},\"types\":[0,0,0,0,0,1,1,1,2,2,2,2,2,2,2,2,0]}'",
-        // tpc-h q6, with additional column
-        // "AWS_LAMBDA_EVENT_BODY='{  \"s3BucketOutput\": \"scan-results-1234\", \"s3KeyOutput\": \"result_\", \"s3BucketInput\": \"develop\", \"s3KeyInput\": \"lineitem_10k_lines.csv\", \"endpoint\": \"10.151.0.4:9000\", \"projection\":{\"arithmetic_operator\":2,\"left_col_id\":5,\"right_col_id\":6,\"result_col_id\":16,\"result_type\":1,\"next_arithmetic\":\"NULL\",\"next_simple_projection\":{\"col_id\":0,\"keep_col\":0,\"next\":{\"col_id\":1,\"keep_col\":0,\"next\":{\"col_id\":2,\"keep_col\":0,\"next\":{\"col_id\":3,\"keep_col\":0,\"next\":{\"col_id\":4,\"keep_col\":0,\"next\":{\"col_id\":5,\"keep_col\":0,\"next\":{\"col_id\":6,\"keep_col\":0,\"next\":{\"col_id\":7,\"keep_col\":0,\"next\":{\"col_id\":8,\"keep_col\":0,\"next\":{\"col_id\":9,\"keep_col\":0,\"next\":{\"col_id\":10,\"keep_col\":0,\"next\":{\"col_id\":11,\"keep_col\":0,\"next\":{\"col_id\":12,\"keep_col\":0,\"next\":{\"col_id\":13,\"keep_col\":0,\"next\":{\"col_id\":14,\"keep_col\":1,\"next\":{\"col_id\":15,\"keep_col\":0,\"next\":\"NULL\"}}}}}}}}}}}}}}}}},\"selection\":{\"logical_operator\":0,\"left_operand_logic\":{\"logical_operator\":0,\"left_operand_logic\":{\"logical_operator\":0,\"left_operand_logic\":\"NULL\",\"right_operand_logic\":\"NULL\",\"left_operand_binary_predicate\":{\"pred_cond\":5,\"col_id\":10,\"comp_val\":\"1994-01-01\"},\"right_operand_binary_predicate\":{\"pred_cond\":2,\"col_id\":10,\"comp_val\":\"1995-01-01\"}},\"right_operand_logic\":{\"logical_operator\":0,\"left_operand_logic\":\"NULL\",\"right_operand_logic\":\"NULL\",\"left_operand_binary_predicate\":{\"pred_cond\":4,\"col_id\":6,\"comp_val\":0.05},\"right_operand_binary_predicate\":{\"pred_cond\":2,\"col_id\":6,\"comp_val\":0.07}},\"left_operand_binary_predicate\":\"NULL\",\"right_operand_binary_predicate\":\"NULL\"},\"right_operand_logic\":{\"logical_operator\":1,\"left_operand_logic\":\"NULL\",\"right_operand_logic\":\"NULL\",\"left_operand_binary_predicate\":{\"pred_cond\":2,\"col_id\":4,\"comp_val\":24},\"right_operand_binary_predicate\":{\"pred_cond\":2,\"col_id\":4,\"comp_val\":24}},\"left_operand_binary_predicate\":\"NULL\",\"right_operand_binary_predicate\":\"NULL\"},\"types\":[0,0,0,0,0,1,1,1,2,2,2,2,2,2,2,2,1]}'",
-        // tpc-h q6, result casted to int and additional column
-        // "AWS_LAMBDA_EVENT_BODY='{ \"s3BucketOutput\": \"test\", \"s3KeyOutput\": \"some_result_\", \"s3BucketInput\": \"develop,develop\", \"s3KeyInput\": \"lineitem_10k_lines.csv,lineitem_10k_lines2.csv\", \"endpoint\": \"10.151.0.3:9000\", \"projection\":{\"arithmetic_operator\":2,\"left_col_id\":5,\"right_col_id\":6,\"result_col_id\":16,\"result_type\":0,\"next_arithmetic\":\"NULL\",\"next_simple_projection\":{\"col_id\":0,\"keep_col\":0,\"next\":{\"col_id\":1,\"keep_col\":0,\"next\":{\"col_id\":2,\"keep_col\":0,\"next\":{\"col_id\":3,\"keep_col\":0,\"next\":{\"col_id\":4,\"keep_col\":0,\"next\":{\"col_id\":5,\"keep_col\":0,\"next\":{\"col_id\":6,\"keep_col\":0,\"next\":{\"col_id\":7,\"keep_col\":0,\"next\":{\"col_id\":8,\"keep_col\":0,\"next\":{\"col_id\":9,\"keep_col\":0,\"next\":{\"col_id\":10,\"keep_col\":0,\"next\":{\"col_id\":11,\"keep_col\":0,\"next\":{\"col_id\":12,\"keep_col\":0,\"next\":{\"col_id\":13,\"keep_col\":0,\"next\":{\"col_id\":14,\"keep_col\":1,\"next\":{\"col_id\":15,\"keep_col\":0,\"next\":\"NULL\"}}}}}}}}}}}}}}}}},\"selection\":{\"logical_operator\":0,\"left_operand_logic\":{\"logical_operator\":0,\"left_operand_logic\":{\"logical_operator\":0,\"left_operand_logic\":\"NULL\",\"right_operand_logic\":\"NULL\",\"left_operand_binary_predicate\":{\"pred_cond\":5,\"col_id\":10,\"comp_val\":\"1994-01-01\"},\"right_operand_binary_predicate\":{\"pred_cond\":2,\"col_id\":10,\"comp_val\":\"1995-01-01\"}},\"right_operand_logic\":{\"logical_operator\":0,\"left_operand_logic\":\"NULL\",\"right_operand_logic\":\"NULL\",\"left_operand_binary_predicate\":{\"pred_cond\":4,\"col_id\":6,\"comp_val\":0.05},\"right_operand_binary_predicate\":{\"pred_cond\":2,\"col_id\":6,\"comp_val\":0.07}},\"left_operand_binary_predicate\":\"NULL\",\"right_operand_binary_predicate\":\"NULL\"},\"right_operand_logic\":{\"logical_operator\":1,\"left_operand_logic\":\"NULL\",\"right_operand_logic\":\"NULL\",\"left_operand_binary_predicate\":{\"pred_cond\":2,\"col_id\":4,\"comp_val\":24},\"right_operand_binary_predicate\":{\"pred_cond\":2,\"col_id\":4,\"comp_val\":24}},\"left_operand_binary_predicate\":\"NULL\",\"right_operand_binary_predicate\":\"NULL\"},\"types\":[0,0,0,0,0,1,1,1,2,2,2,2,2,2,2,2,0]}'",
-        "-e",
-        "AWS_ACCESS_KEY_ID=\"minio\"",
-        "-e",
-        "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
-        "-e",
-        "SKYRISE_HEAPTRACK=false",
-        "-e",
-        "SKYRISE_HOTSPOT=false",
-        "-e",
-        "SKYRISE_ARTIFACT=scanOperator",
-        "-e",
-        "SKYRISE_DEBUG=${input:bool}",
-        "-e",
-        "SKYRISE_DEBUG_IP=\"127.0.0.1\"", // \"192.168.97.3\"",
-        "-e",
-        "SKYRISE_DEBUG_PORT=\"1234\"",
-        "--privileged",
-        "--cap-add=SYS_PTRACE",
-        "--security-opt",
-        "seccomp=unconfined",
         "--rm",
+        "-e",
+        "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/tmp/cmake-build-debug/lib:/tmp/cmake-build-debug/lib/lib64",
+        "-v",
+        "${workspaceFolder}:/tmp",
         "-v",
         "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
         "-v",
-        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
-        "$USER/skyrise:run"
-      ],
-      "dependsOn": "create containers"
+        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // usr/lib64
+        "$USER/skyrise:build",
+        "/bin/bash",
+        "-c",
+        "cd /var/task/bin/ && ./skyriseTest --gtest_filter=${input:testString} --gmock_verbose=info --gtest_stack_trace_depth=100"
+      ]
     },
     {
-      "label": "run debug container monolithic scan tcp-h q6",
+      "label": "list all available tests in skyriseTest",
       "type": "shell",
       "command": "docker",
       "args": [
         "run",
-        "--entrypoint",
-        "\"\"",
-        "-it",
-        "-w",
-        "/",
-        "-p",
-        "2159:2159",
-        "-e",
-        // tpc-h q6 monolithic
-        "AWS_LAMBDA_EVENT_BODY='{\"endpoint\": \"10.151.0.2:9000\",  \"s3BucketOutput\": \"scan-results-1234\", \"s3KeyOutput\": \"result_\", \"s3BucketInput\": \"develop\", \"s3KeyInput\": \"line.1.csv\",  \"projectionFirst\": {  \"arithmetic_operator\": 2,  \"left_col_id\": 5,  \"right_col_id\": 6,  \"result_col_id\": 16,  \"result_type\": 1,  \"next_arithmetic\":  \"NULL\",  \"next_aggregate\":  \"NULL\",  \"next_simple_projection\": {  \"col_id\": 0,  \"keep_col\": 0,  \"next\": {  \"col_id\": 1,  \"keep_col\": 0,  \"next\": {  \"col_id\": 2,  \"keep_col\": 0,  \"next\": {  \"col_id\": 3,  \"keep_col\": 0,  \"next\": {  \"col_id\": 4,  \"keep_col\": 0,  \"next\": {  \"col_id\": 5,  \"keep_col\": 0,  \"next\": {  \"col_id\": 6,  \"keep_col\": 0,  \"next\": {  \"col_id\": 7,  \"keep_col\": 0,  \"next\": {  \"col_id\": 8,  \"keep_col\": 0,  \"next\": {  \"col_id\": 9,  \"keep_col\": 0,  \"next\": {  \"col_id\": 10,  \"keep_col\": 0,  \"next\": {  \"col_id\": 11,  \"keep_col\": 0,  \"next\": {  \"col_id\": 12,  \"keep_col\": 0,  \"next\": {  \"col_id\": 13,  \"keep_col\": 0,  \"next\": {  \"col_id\": 14,  \"keep_col\": 0,  \"next\": {  \"col_id\": 15,  \"keep_col\": 0,  \"next\":  \"NULL\" } } } } } } } } } } } } } } } } },  \"selectionFirst\": {  \"logical_operator\": 0,  \"left_operand_logic\": {  \"logical_operator\": 0,  \"left_operand_logic\": {  \"logical_operator\": 0,  \"left_operand_logic\":  \"NULL\",  \"right_operand_logic\":  \"NULL\",  \"left_operand_binary_predicate\": {  \"pred_cond\": 5,  \"col_id\": 10,  \"comp_val\":  \"1994-01-01 \" },  \"right_operand_binary_predicate\": {  \"pred_cond\": 2,  \"col_id\": 10,  \"comp_val\":  \"1995-01-01 \" } },  \"right_operand_logic\": {  \"logical_operator\": 0,  \"left_operand_logic\":  \"NULL\",  \"right_operand_logic\":  \"NULL\",  \"left_operand_binary_predicate\": {  \"pred_cond\": 4,  \"col_id\": 6,  \"comp_val\": 0.05 },  \"right_operand_binary_predicate\": {  \"pred_cond\": 2,  \"col_id\": 6,  \"comp_val\": 0.07 } },  \"left_operand_binary_predicate\":  \"NULL\",  \"right_operand_binary_predicate\":  \"NULL\" },  \"right_operand_logic\": {  \"logical_operator\": 1,  \"left_operand_logic\":  \"NULL\",  \"right_operand_logic\":  \"NULL\",  \"left_operand_binary_predicate\": {  \"pred_cond\": 2,  \"col_id\": 4,  \"comp_val\": 24 },  \"right_operand_binary_predicate\": {  \"pred_cond\": 2,  \"col_id\": 4,  \"comp_val\": 24 } },  \"left_operand_binary_predicate\":  \"NULL\",  \"right_operand_binary_predicate\":  \"NULL\" },  \"types\": [0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1],  \"projectionSecond\": {  \"agg_func\": 0,  \"col_id\": 16,  \"next_simple\":  \"NULL\" },  \"selectionSecond\": {  \"pred_cond\": 5,  \"col_id\": 16,  \"comp_val\": 2.2250738585072014e-308 }}'",
-        "-e",
-        "AWS_ACCESS_KEY_ID=\"minio\"",
-        "-e",
-        "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
-        "-e",
-        "SKYRISE_DEBUG_TOOL=heaptrack",
-        "-e",
-        "SKYRISE_HEAPTRACK=true",
-        "-e",
-        "SKYRISE_HOTSPOT=false",
-        "-e",
-        "SKYRISE_ARTIFACT=monolithicOperator",
-        "-e",
-        "SKYRISE_DEBUG=${input:bool}",
-        "-e",
-        "SKYRISE_DEBUG_IP=\"127.0.0.1\"", // \"192.168.97.3\"",
-        "-e",
-        "SKYRISE_DEBUG_PORT=\"1234\"",
-        "--privileged",
-        "--cap-add=SYS_PTRACE",
-        "--security-opt",
-        "seccomp=unconfined",
         "--rm",
+        "-e",
+        "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/tmp/cmake-build-debug/lib:/tmp/cmake-build-debug/lib/lib64",
+        "-v",
+        "${workspaceFolder}:/tmp",
         "-v",
         "${workspaceFolder}/cmake-build-debug/bin:/var/task/bin/",
         "-v",
-        "${workspaceFolder}/debug:/var/task/debug/",
-        "-v",
-        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib",
-        "$USER/skyrise:run",
-        "/bin/bash"
-      ],
-      "dependsOn": "create containers"
+        "${workspaceFolder}/cmake-build-debug/lib:/tmp/cmake-build-debug/lib", // usr/lib64
+        "$USER/skyrise:build",
+        "/bin/bash",
+        "-c",
+        "cd /var/task/bin/ && ./skyriseTest --gtest_list_tests"
+      ]
     },
     {
       "label": "launch skyrise:run without artifact",
@@ -314,6 +163,8 @@
         "AWS_ACCESS_KEY_ID=\"minio\"",
         "-e",
         "AWS_SECRET_ACCESS_KEY=\"miniostorage\"",
+        "-e",
+        "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/tmp/cmake-build-debug/lib:/tmp/cmake-build-debug/lib/lib64",
         "--privileged",
         "--cap-add=SYS_PTRACE",
         "--security-opt",
@@ -345,6 +196,21 @@
         "-c",
         "cd ${workspaceFolder} && ./script/docker/build_images.sh --prune & disown"
       ]
+    },
+    {
+      "label": "list all available cmake targets",
+      "type": "shell",
+      "command": "bash",
+      "args": ["-c", "cd ${workspaceFolder}/cmake-build-debug && ninja help"]
+    },
+    {
+      "label": "list all local executables",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "for bin in $(ls ${workspaceFolder}/cmake-build-debug/bin | sort) ; do echo $bin ; done"
+      ]
     }
   ],
   "inputs": [
@@ -354,10 +220,12 @@
       "description": "the test suit that will be executed. Will be passed to gtest -gtest_filter",
       "options": [
         "*",
-        "Projection*",
-        "JsonSerializer*",
-        "Selection*",
-        "Evaluator*"
+        "CostCalculatorTest*",
+        "FunctionHostInformationTest*",
+        "JsonSerializerFixture*",
+        "PricingTest*",
+        "SmartPtrFixture*",
+        "JsonSerializerInterfaceTest*"
       ]
     },
     {
@@ -371,35 +239,54 @@
       "id": "pickTargetOrArtivact",
       "description": "The artifact to build/execute",
       "options": [
-        "aggregateOperator",
         "all",
-        "aws-lambda-package-benchmarkDriver",
-        "aws-lambda-package-monolithicOperator",
-        "aws-lambda-package-scanOperator",
-        "aws-lambda-package-skyriseBenchmark",
-        "aws-lambda-package-skyriseCoordinator",
-        "benchmarkDriver",
+        "aws-cpp-sdk-access-management",
+        "aws-cpp-sdk-cognito-identity",
+        "aws-cpp-sdk-core",
+        "aws-cpp-sdk-iam",
+        "aws-cpp-sdk-kinesis",
+        "aws-cpp-sdk-lambda",
+        "aws-cpp-sdk-monitoring",
+        "aws-cpp-sdk-pricing",
+        "aws-cpp-sdk-s3",
+        "aws-cpp-sdk-sqs",
+        "aws-cpp-sdk-xray",
+        "aws-lambda-package-skyriseFunctionMinimal",
+        "aws-lambda-runtime",
         "clang-format-edit",
-        "helpers_lib",
-        "minimalFunction",
-        "monolithicOperator",
-        "orchestrator",
-        "scanOperator",
+        "clean",
+        "depend",
+        "edit_cache",
+        "gmock_main",
+        "gmock",
+        "gtest_main",
+        "gtest",
+        "install",
+        "install/local",
+        "install/strip",
+        "list_install_components",
+        "lz4_ep",
+        "orc",
+        "package_source",
+        "package",
+        "protobuf_ep",
+        "queryJsonGen",
+        "rebuild_cache",
         "simpleBenchmark",
         "skyrise",
         "skyriseBenchmark",
-        "skyriseBenchmarkLib",
+        "skyriseBenchmarkConsole",
         "skyriseConsole",
-        "skyriseCoordinator",
+        "skyriseCoordinatorLib",
         "skyriseFunctionMinimal",
-        "skyriseTest"
+        "skyriseTest",
+        "skyriseWorker",
+        "snappy_ep",
+        "tpch-dbgen",
+        "uninstall",
+        "zlib_ep",
+        "zstd_ep"
       ]
-    },
-    {
-      "type": "pickString",
-      "id": "bool",
-      "description": "pick a boolean value",
-      "options": ["true", "false"]
     }
   ]
 }

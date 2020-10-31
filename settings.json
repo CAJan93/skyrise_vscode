@@ -1,6 +1,7 @@
 {
     "git.ignoreLimitWarning": true,
     "C_Cpp.default.cppStandard": "c++17",
+    "C_Cpp.formatting": "Default",
     "C_Cpp.default.includePath": [
         "${workspaceFolder}/src/benchmark/benchmark_driver",
         "${workspaceFolder}/src/benchmark/benchmark_driver/benchmark_configs",
@@ -101,6 +102,12 @@
         "complex": "cpp",
         "rope": "cpp",
         "slist": "cpp",
-        "scoped_allocator": "cpp"
+        "scoped_allocator": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "ranges": "cpp",
+        "stop_token": "cpp",
+        "coroutine": "cpp",
+        "source_location": "cpp"
     }
 }
