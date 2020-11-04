@@ -2,6 +2,20 @@
   "version": "2.0.0",
   "tasks": [
     {
+      // python3 script/run_clang_format.py --clang_format_binary clang-format --source_dir src --fix
+      "label": "clang-format --fix",
+      "type": "shell",
+      "command": "python3",
+      "args": [
+        "script/run_clang_format.py",
+        "--clang_format_binary",
+        "clang-format",
+        "--source_dir",
+        "src",
+        "--fix"
+      ]
+    },
+    {
       "label": "git: get/update all submodules",
       "type": "shell",
       "command": "git",
@@ -44,7 +58,7 @@
       ]
     },
     {
-      "label": "cmake + ninja target + Clang tidy",
+      "label": "cmake + ninja target + clang-tidy",
       "type": "shell",
       "command": "bash",
       "args": [
@@ -53,7 +67,7 @@
       ]
     },
     {
-      "label": "clang tidy --fix",
+      "label": "clang-tidy --fix",
       "type": "shell",
       "command": "python3",
       "args": [
@@ -66,16 +80,16 @@
       ]
     },
     {
-      "label": "cmake + ninja target + Clang tidy + clang format",
+      "label": "cmake + ninja target + clang-tidy + clang-format",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "./script/docker/build_project.sh --verbose --build-type ${input:buildtype} --cmake \"-DPACKAGER_NO_LIBC=ON -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DSKYRISE_ENABLE_CLANG_TIDY=ON -DSKYRISE_ENABLE_CPPCHECK=ON -DSKYRISE_ENABLE_CPPLINT=OFF -DSKYRISE_ENABLE_CLANG_FORMAT=ON\" --make-target ${input:pickTargetOrArtivact}"
+        "./script/docker/build_project.sh --verbose --build-type ${input:buildtype} --cmake \"-DPACKAGER_NO_LIBC=ON -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DSKYRISE_ENABLE_CLANG_TIDY=ON -DSKYRISE_ENABLE_CPPCHECK=OFF -DSKYRISE_ENABLE_CPPLINT=OFF -DSKYRISE_ENABLE_CLANG_FORMAT=ON\" --make-target ${input:pickTargetOrArtivact}"
       ]
     },
     {
-      "label": "cmake + ninja target + Clang tidy + clang format + cpplint",
+      "label": "cmake + ninja target + clang-tidy + clang-format + cpplint",
       "type": "shell",
       "command": "bash",
       "args": [
@@ -222,10 +236,13 @@
         "*",
         "CostCalculatorTest*",
         "FunctionHostInformationTest*",
-        "JsonSerializerFixture*",
+        "IsIntegralTest*",
+        "IsOptionalTest*",
+        "IsSmartPointerTest*",
+        "IsVectorTest*",
+        "JsonSerializerTest*",
         "PricingTest*",
-        "SmartPtrFixture*",
-        "JsonSerializerInterfaceTest*"
+        "SmartPtrFixture*"
       ]
     },
     {
