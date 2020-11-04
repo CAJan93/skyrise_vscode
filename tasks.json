@@ -236,6 +236,7 @@
         "*",
         "CostCalculatorTest*",
         "FunctionHostInformationTest*",
+        "Is*Test*",
         "IsIntegralTest*",
         "IsOptionalTest*",
         "IsSmartPointerTest*",

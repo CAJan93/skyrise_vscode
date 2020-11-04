@@ -110,5 +110,5 @@
         "coroutine": "cpp",
         "source_location": "cpp"
     },
-    "AllAutocomplete.showCurrentDocument": false
+    "AllAutocomplete.showCurrentDocument": true
 }
