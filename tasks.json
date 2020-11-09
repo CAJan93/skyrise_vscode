@@ -191,10 +191,10 @@
         "$USER/skyrise:run",
         "/bin/bash"
       ],
-      "dependsOn": "create containers"
+      "dependsOn": "DOCKER create containers"
     },
     {
-      "label": "create containers",
+      "label": "DOCKER create containers",
       "type": "shell",
       "command": "bash",
       "args": [
